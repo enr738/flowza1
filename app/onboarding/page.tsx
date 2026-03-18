@@ -17,6 +17,7 @@ const ROLES = [
     href: '/dashboard/seller',
     gradient: 'from-primary-blue/20 to-primary-blue/5',
     border: 'border-primary-blue/30 hover:border-primary-blue/60',
+    featured: false,
   },
   {
     icon: User,
@@ -27,6 +28,7 @@ const ROLES = [
     href: '/dashboard/personal',
     gradient: 'from-primary-purple/20 to-primary-purple/5',
     border: 'border-primary-purple/30 hover:border-primary-purple/60',
+    featured: false,
   },
   {
     icon: Building2,
