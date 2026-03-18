@@ -2,6 +2,11 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ShoppingBag, Users, Briefcase, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Company Dashboard',
+};
 
 export default function CompanyOverview() {
   const stats = [

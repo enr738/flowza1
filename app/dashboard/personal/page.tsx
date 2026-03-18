@@ -2,6 +2,11 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ShoppingBag, Heart, Clock, Search } from 'lucide-react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'My Dashboard',
+};
 
 export default function PersonalOverview() {
   const stats = [

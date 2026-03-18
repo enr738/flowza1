@@ -1,20 +1,25 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
-import { Search, Menu } from 'lucide-react';
+import { Search, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background-dark/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0">
+        <Link href="/" className="flex-shrink-0 z-50" onClick={() => setIsOpen(false)}>
           <div className="hidden md:block">
-            <Image src="/logo.png" alt="Flowza" width={140} height={40} priority />
+            <Image priority quality={85} src="/logo.png" alt="Flowza - Freelance Marketplace" width={140} height={40} />
           </div>
           <div className="block md:hidden">
-            <Image src="/logo-icon.png" alt="Flowza Logo" width={40} height={40} priority />
+            <Image priority quality={85} src="/logo-icon.png" alt="Flowza Icon - Freelance Marketplace" width={40} height={40} />
           </div>
         </Link>
 
@@ -32,10 +37,10 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="hidden md:flex flex-shrink-0 items-center gap-4">
-          <Link href="/explore" className="text-sm font-medium text-text-secondary hover:text-white transition-colors">
+          <Link href="/explore" className="text-sm font-medium text-[#C4BFD8] hover:text-white transition-colors">
             Explore
           </Link>
-          <Link href="/onboarding" className="text-sm font-medium text-text-secondary hover:text-white transition-colors">
+          <Link href="/onboarding" className="text-sm font-medium text-[#C4BFD8] hover:text-white transition-colors">
             Sign In
           </Link>
           <Link href="/onboarding">
@@ -44,10 +49,46 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu button */}
-        <button className="md:hidden p-2 text-text-secondary hover:text-white">
-          <Menu className="h-6 w-6" />
+        <button 
+          className="md:hidden p-2 text-[#C4BFD8] hover:text-white z-50"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
 
+      </div>
+
+      {/* Mobile Slide-down Menu */}
+      <div 
+        className={`md:hidden absolute top-16 left-0 w-full bg-background-dark border-b border-border transition-all duration-300 ease-in-out overflow-hidden ${
+          isOpen ? 'max-h-[400px] opacity-100 py-4' : 'max-h-0 opacity-0 py-0'
+        }`}
+      >
+        <div className="px-4 flex flex-col space-y-4">
+          <div className="relative mb-2">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-[#C4BFD8]" />
+            </div>
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="w-full h-11 pl-10 pr-4 rounded-xl bg-surface border border-border text-[#FFFFFF] placeholder:text-[#C4BFD8] focus:outline-none focus:border-primary-blue text-sm"
+            />
+          </div>
+          
+          <Link href="/explore" onClick={() => setIsOpen(false)} className="text-[#C4BFD8] hover:text-white font-medium p-2 rounded-lg hover:bg-white/5">
+            Explore
+          </Link>
+          <Link href="/onboarding" onClick={() => setIsOpen(false)} className="text-[#C4BFD8] hover:text-white font-medium p-2 rounded-lg hover:bg-white/5">
+            Sign In
+          </Link>
+          
+          <div className="border-t border-border pt-4 mt-2">
+            <Link href="/onboarding" onClick={() => setIsOpen(false)} className="w-full">
+              <Button className="w-full justify-center">Join Flowza</Button>
+            </Link>
+          </div>
+        </div>
       </div>
     </nav>
   );

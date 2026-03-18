@@ -5,8 +5,40 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Flowza | Built for Freelancers',
-  description: 'Find World-Class Freelancers on Flowza.',
+  title: {
+    default: 'Flowza — Freelance Marketplace for Teams & Individuals',
+    template: '%s | Flowza',
+  },
+  description:
+    'Flowza is a freelance marketplace connecting skilled freelancers with individuals and companies. Hire top talent or offer your services today.',
+  keywords: ['freelance', 'marketplace', 'hire freelancers', 'flowza', 'remote work', 'company hiring'],
+  authors: [{ name: 'Flowza' }],
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://flowza-delta.vercel.app',
+    siteName: 'Flowza',
+    title: 'Flowza — Freelance Marketplace for Teams & Individuals',
+    description: 'Hire world-class freelancers or offer your skills on Flowza.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Flowza Freelance Marketplace',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Flowza — Freelance Marketplace',
+    description: 'Hire world-class freelancers or offer your skills on Flowza.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

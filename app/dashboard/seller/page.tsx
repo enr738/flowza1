@@ -1,6 +1,11 @@
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { DollarSign, ShoppingBag, Eye, Star, TrendingUp } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Seller Dashboard',
+};
 
 export default function SellerOverview() {
   const stats = [

@@ -21,16 +21,27 @@ export function GigCard({ id, title, sellerName, sellerAvatar, price, rating, ra
         <div className="relative aspect-video w-full overflow-hidden bg-surface">
           <Image 
             src={imageUrl} 
-            alt={title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            alt={`${title} freelance service`}
+            width={600}
+            height={338}
+            quality={85}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
         <div className="p-4 flex flex-col flex-1">
           <div className="flex items-center gap-2 mb-3">
-            <div className="relative h-6 w-6 rounded-full overflow-hidden bg-white/10">
+            <div className="relative h-6 w-6 rounded-full overflow-hidden bg-white/10 shrink-0">
               {sellerAvatar && (
-                <Image src={sellerAvatar} alt={sellerName} fill className="object-cover" />
+                <Image 
+                  src={sellerAvatar} 
+                  alt={`${sellerName} profile picture`} 
+                  width={24} 
+                  height={24} 
+                  quality={85}
+                  loading="lazy"
+                  className="w-full h-full object-cover" 
+                />
               )}
             </div>
             <span className="text-sm text-text-secondary font-medium">{sellerName}</span>

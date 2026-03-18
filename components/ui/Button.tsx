@@ -12,10 +12,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading, children, ...props }, ref) => {
     
     const variants = {
-      primary: 'bg-gradient-primary text-white hover:opacity-90 shadow-lg shadow-primary-purple/20',
-      secondary: 'bg-surface text-white hover:bg-border',
-      outline: 'border border-border text-text-primary hover:bg-white/5',
-      ghost: 'hover:bg-white/5 text-text-secondary hover:text-white',
+      primary: 'bg-gradient-to-r from-[#4DA6FF] to-[#7C3AED] text-white font-bold hover:opacity-90 hover:scale-[1.02] shadow-lg shadow-purple-500/25',
+      secondary: 'border-2 border-white/20 text-white font-semibold hover:border-white/40 hover:bg-white/5',
+      outline: 'border border-border text-white hover:bg-white/5',
+      ghost: 'hover:bg-white/5 text-[#C4BFD8] hover:text-white',
       glass: 'glass hover:bg-white/10 text-white',
     };
 
