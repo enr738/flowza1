@@ -1,17 +1,12 @@
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Mail, Search, Shield, Trash2 } from 'lucide-react';
+import { Mail, Search, Shield, Trash2, Users } from 'lucide-react';
 
 export default function CompanyTeam() {
-  const members = [
-    { id: 1, name: 'Alice Smith', email: 'alice@acme.com', role: 'owner', orders: 12 },
-    { id: 2, name: 'John Doe', email: 'john@acme.com', role: 'admin', orders: 24 },
-    { id: 3, name: 'Bob Johnson', email: 'bob@acme.com', role: 'member', orders: 5 },
-    { id: 4, name: 'Sarah Wilson', email: 'sarah@acme.com', role: 'member', orders: 4 },
-  ];
+  const members: any[] = [];
 
   const getRoleBadge = (role: string) => {
-    switch(role) {
+    switch (role) {
       case 'owner': return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-purple/20 text-primary-purple border border-primary-purple/30">👑 Owner</span>;
       case 'admin': return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-blue/20 text-primary-blue border border-primary-blue/30">🛡️ Admin</span>;
       default: return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface border border-border text-text-secondary">👤 Member</span>;
@@ -30,10 +25,10 @@ export default function CompanyTeam() {
 
       <Card className="overflow-hidden">
         <div className="p-4 border-b border-border flex gap-4">
-           <div className="relative flex-1 max-w-sm">
-             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-secondary" />
-             <input type="text" placeholder="Search members..." className="w-full pl-9 pr-4 py-2 bg-background-dark border border-border rounded-xl text-sm focus:outline-none focus:border-primary-blue text-white" />
-           </div>
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-secondary" />
+            <input type="text" placeholder="Search members..." className="w-full pl-9 pr-4 py-2 bg-background-dark border border-border rounded-xl text-sm focus:outline-none focus:border-primary-blue text-white" />
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
@@ -46,29 +41,17 @@ export default function CompanyTeam() {
               </tr>
             </thead>
             <tbody>
-              {members.map((m) => (
-                <tr key={m.id} className="border-b border-border hover:bg-white/5 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary-blue to-primary-purple flex items-center justify-center font-bold text-white shadow-sm">
-                        {m.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">{m.name}</p>
-                        <p className="text-xs text-text-secondary">{m.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">{getRoleBadge(m.role)}</td>
-                  <td className="px-6 py-4 text-text-secondary">{m.orders}</td>
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="ghost" size="icon" className="hover:text-white"><Shield className="h-4 w-4" /></Button>
-                    {m.role !== 'owner' && (
-                      <Button variant="ghost" size="icon" className="text-error hover:text-error hover:bg-error/10 ml-2"><Trash2 className="h-4 w-4" /></Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              <tr>
+                <td colSpan={4} className="py-20 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <Users className="w-16 h-16 text-white/20 mb-4" />
+                    <h3 className="text-white font-semibold text-lg mb-2">No team members yet</h3>
+                    <p className="text-text-secondary text-sm">
+                      Invite members to join your company workspace.
+                    </p>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

@@ -1,13 +1,9 @@
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { PenTool, Trash2, SwitchCamera, ExternalLink } from 'lucide-react';
+import { PenTool, Trash2, SwitchCamera, ExternalLink, PackageOpen } from 'lucide-react';
 
 export default function SellerGigs() {
-  const gigs = [
-    { id: 1, title: 'I will design a modern minimal logo for your brand', active: true, orders: 4, impressions: '2.1k', clicks: 342, earnings: '$800' },
-    { id: 2, title: 'I will create a complete brand identity package', active: true, orders: 1, impressions: '840', clicks: 121, earnings: '$2,500' },
-    { id: 3, title: 'I will design custom social media templates', active: false, orders: 0, impressions: '150', clicks: 23, earnings: '$0' },
-  ];
+  const gigs: any[] = [];
 
   return (
     <div className="space-y-8">
@@ -32,34 +28,17 @@ export default function SellerGigs() {
               </tr>
             </thead>
             <tbody>
-              {gigs.map((gig) => (
-                <tr key={gig.id} className="border-b border-border hover:bg-white/5 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-16 bg-surface rounded-lg relative overflow-hidden border border-border">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-primary-purple/20 to-primary-blue/20" />
-                      </div>
-                      <div>
-                        <p className="text-white font-medium line-clamp-1 max-w-sm">{gig.title}</p>
-                        <span className={`inline-flex items-center gap-1.5 mt-1 text-xs font-semibold ${gig.active ? 'text-success' : 'text-text-secondary'}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${gig.active ? 'bg-success' : 'bg-text-secondary'}`} />
-                          {gig.active ? 'Active' : 'Paused'}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-text-secondary">{gig.impressions}</td>
-                  <td className="px-6 py-4 text-text-secondary">{gig.clicks}</td>
-                  <td className="px-6 py-4 text-text-secondary">{gig.orders}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                       <Button variant="ghost" size="icon"><PenTool className="h-4 w-4" /></Button>
-                       <Button variant="ghost" size="icon"><SwitchCamera className="h-4 w-4" /></Button>
-                       <Button variant="ghost" size="icon" className="text-error hover:text-error hover:bg-error/10"><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              <tr>
+                <td colSpan={5} className="py-20 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <PackageOpen className="w-16 h-16 text-white/20 mb-4" />
+                    <h3 className="text-white font-semibold text-lg mb-2">No gigs yet</h3>
+                    <p className="text-text-secondary text-sm">
+                      Create your first gig to start selling on Flowza.
+                    </p>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

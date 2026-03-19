@@ -5,18 +5,9 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { GigCard } from '@/components/gigs/GigCard';
 import { Button } from '@/components/ui/Button';
-import { SlidersHorizontal, Star } from 'lucide-react';
+import { SlidersHorizontal, Star, PackageOpen } from 'lucide-react';
 
-const ALL_GIGS = [
-  { id: '1', title: 'I will design a modern minimal logo for your brand', sellerName: 'Sarah J.', price: 150, rating: 4.9, ratingCount: 128, imageUrl: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=800', category: 'Design' },
-  { id: '2', title: 'I will build a full-stack Next.js web application', sellerName: 'Alex M.', price: 800, rating: 5.0, ratingCount: 45, imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800', category: 'Development' },
-  { id: '3', title: 'I will write SEO optimized blog articles and website copy', sellerName: 'Emma W.', price: 50, rating: 4.8, ratingCount: 312, imageUrl: 'https://images.unsplash.com/photo-1455390582262-044cdead2708?auto=format&fit=crop&q=80&w=800', category: 'Writing' },
-  { id: '4', title: 'I will create engaging short-form video content for TikTok/Reels', sellerName: 'David K.', price: 120, rating: 4.9, ratingCount: 89, imageUrl: 'https://images.unsplash.com/photo-1536240478700-b869070f6128?auto=format&fit=crop&q=80&w=800', category: 'Video' },
-  { id: '5', title: 'I will manage and grow your social media presence', sellerName: 'Lisa R.', price: 400, rating: 4.7, ratingCount: 201, imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=800', category: 'Marketing' },
-  { id: '6', title: 'I will design your mobile app UI/UX in Figma', sellerName: 'Marcus T.', price: 350, rating: 5.0, ratingCount: 67, imageUrl: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=800', category: 'Design' },
-  { id: '7', title: 'I will develop a custom Shopify store with theme', sellerName: 'Nina P.', price: 600, rating: 4.8, ratingCount: 143, imageUrl: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=800', category: 'Development' },
-  { id: '8', title: 'I will create a professional explainer video for your product', sellerName: 'Omar S.', price: 250, rating: 4.9, ratingCount: 78, imageUrl: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&q=80&w=800', category: 'Video' },
-];
+const ALL_GIGS: any[] = [];
 
 const CATEGORIES = ['All', 'Design', 'Development', 'Writing', 'Marketing', 'Video'];
 const SORT_OPTIONS = ['Relevant', 'Best Rated', 'Lowest Price', 'Newest'];
@@ -122,11 +113,12 @@ export default function ExplorePage() {
             {/* Gig Grid */}
             <div className="flex-1">
               {filtered.length === 0 ? (
-                <div className="text-center py-20 text-text-secondary">
-                  <p className="text-xl mb-2">No services match your filters</p>
-                  <Button variant="outline" onClick={() => { setActiveCategory('All'); setMinRating(0); setPriceRange([0, 1000]); }}>
-                    Clear Filters
-                  </Button>
+                <div className="flex flex-col items-center justify-center py-20 text-center w-full">
+                  <PackageOpen className="w-16 h-16 text-white/20 mb-4" />
+                  <h3 className="text-white font-semibold text-lg mb-2">No services yet</h3>
+                  <p className="text-text-secondary text-sm">
+                    Services will appear here once freelancers join the platform.
+                  </p>
                 </div>
               ) : (
                 <div className={`grid gap-5 grid-cols-1 sm:grid-cols-2 ${showFilters ? 'lg:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>

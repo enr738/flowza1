@@ -1,6 +1,7 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
@@ -44,6 +45,14 @@ const ROLES = [
 ] as const;
 
 export default function OnboardingPage() {
+  const { user } = useUser();
+  const router = useRouter();
+
+  const handleRoleSelect = (roleTitle: string, roleHref: string) => {
+    localStorage.setItem('flowza_role', roleTitle);
+    router.push(roleHref);
+  };
+
   return (
     <>
       <Navbar />
@@ -60,9 +69,9 @@ export default function OnboardingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
           {ROLES.map((role) => (
-            <Link href={role.href} key={role.title} className="group">
+            <div onClick={() => handleRoleSelect(role.title, role.href)} key={role.title} className="group cursor-pointer h-full">
               <Card
-                className={`relative p-8 flex flex-col items-center text-center h-full border-2 transition-all duration-200 cursor-pointer hover:-translate-y-1 bg-gradient-to-b ${role.gradient} ${role.border}`}
+                className={`relative p-8 flex flex-col items-center text-center h-full border-2 transition-all duration-200 hover:-translate-y-1 bg-gradient-to-b ${role.gradient} ${role.border}`}
               >
                 {role.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-primary text-white text-xs font-semibold">
@@ -80,7 +89,7 @@ export default function OnboardingPage() {
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </Button>
               </Card>
-            </Link>
+            </div>
           ))}
         </div>
       </main>

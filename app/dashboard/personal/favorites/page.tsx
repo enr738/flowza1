@@ -1,11 +1,8 @@
 import { GigCard } from '@/components/gigs/GigCard';
+import { FolderHeart } from 'lucide-react';
 
 export default function PersonalFavorites() {
-  const savedGigs = [
-    { id: '1', title: 'I will design a modern minimal logo for your brand', sellerName: 'Sarah J.', price: 150, rating: 4.9, ratingCount: 128, imageUrl: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=800' },
-    { id: '4', title: 'I will create engaging short-form video content for TikTok/Reels', sellerName: 'David K.', price: 120, rating: 4.9, ratingCount: 89, imageUrl: 'https://images.unsplash.com/photo-1536240478700-b869070f6128?auto=format&fit=crop&q=80&w=800' },
-    { id: '6', title: 'I will design your mobile app UI/UX in Figma', sellerName: 'Marcus T.', price: 350, rating: 5.0, ratingCount: 67, imageUrl: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=800' },
-  ];
+  const savedGigs: any[] = [];
 
   return (
     <div className="space-y-8">
@@ -15,14 +12,13 @@ export default function PersonalFavorites() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {savedGigs.map(gig => (
-          <div key={gig.id} className="relative group">
-            <GigCard {...gig} />
-            <button className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-white/20">
-               <span className="text-white">✕</span>
-            </button>
-          </div>
-        ))}
+        <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
+          <FolderHeart className="w-16 h-16 text-white/20 mb-4" />
+          <h3 className="text-white font-semibold text-lg mb-2">No saved services</h3>
+          <p className="text-text-secondary text-sm">
+            Services you save for later will appear here.
+          </p>
+        </div>
       </div>
     </div>
   );

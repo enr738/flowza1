@@ -14,25 +14,25 @@ export default function SellerEarnings() {
         <Card className="p-6 relative overflow-hidden bg-gradient-to-br from-primary-blue/20 to-primary-purple/20 border-primary-blue/30">
           <div className="absolute top-0 right-0 p-4 opacity-50"><DollarSign className="h-16 w-16 text-primary-blue" /></div>
           <p className="text-sm font-medium text-white/80 mb-2">Available for withdrawal</p>
-          <p className="text-4xl font-bold text-white mb-6">$3,240.50</p>
+          <p className="text-4xl font-bold text-white mb-6">$0.00</p>
           <Button className="w-full gap-2"><ArrowDownToLine className="h-4 w-4" /> Withdraw Funds</Button>
         </Card>
 
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-             <p className="text-sm font-medium text-text-secondary">Pending Clearance</p>
-             <Clock className="h-5 w-5 text-warning" />
+            <p className="text-sm font-medium text-text-secondary">Pending Clearance</p>
+            <Clock className="h-5 w-5 text-warning" />
           </div>
-          <p className="text-3xl font-bold text-white mb-2">$850.00</p>
-          <p className="text-sm text-text-secondary">From 3 active orders</p>
+          <p className="text-3xl font-bold text-white mb-2">$0.00</p>
+          <p className="text-sm text-text-secondary">From 0 active orders</p>
         </Card>
 
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-             <p className="text-sm font-medium text-text-secondary">Lifetime Earned</p>
-             <ArrowUpRight className="h-5 w-5 text-success" />
+            <p className="text-sm font-medium text-text-secondary">Lifetime Earned</p>
+            <ArrowUpRight className="h-5 w-5 text-success" />
           </div>
-          <p className="text-3xl font-bold text-white mb-2">$14,500.00</p>
+          <p className="text-3xl font-bold text-white mb-2">$0.00</p>
           <p className="text-sm text-text-secondary">Since member joined</p>
         </Card>
       </div>
@@ -49,18 +49,17 @@ export default function SellerEarnings() {
             </tr>
           </thead>
           <tbody>
-            {[
-              { date: 'Oct 24, 2023', type: 'Cleared', desc: 'Order #1234 - Logo Design', amount: '+$150.00', color: 'text-success' },
-              { date: 'Oct 22, 2023', type: 'Withdrawal', desc: 'Transfer to Bank Account', amount: '-$500.00', color: 'text-white' },
-              { date: 'Oct 15, 2023', type: 'Pending', desc: 'Order #1100 - Web App', amount: '+$800.00', color: 'text-warning' },
-            ].map((t, i) => (
-              <tr key={i} className="border-b border-border/50">
-                <td className="py-4 text-text-secondary">{t.date}</td>
-                <td className="py-4 text-text-secondary"><span className="px-2 py-1 rounded bg-white/5">{t.type}</span></td>
-                <td className="py-4 text-white font-medium">{t.desc}</td>
-                <td className={`py-4 text-right font-bold ${t.color}`}>{t.amount}</td>
-              </tr>
-            ))}
+            <tr>
+              <td colSpan={4} className="py-20 text-center">
+                <div className="flex flex-col items-center justify-center">
+                  <DollarSign className="w-16 h-16 text-white/20 mb-4" />
+                  <h3 className="text-white font-semibold text-lg mb-2">No transactions yet</h3>
+                  <p className="text-text-secondary text-sm">
+                    Your earnings and withdrawals will appear here.
+                  </p>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </Card>
