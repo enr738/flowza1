@@ -3,12 +3,15 @@ import { Button } from '@/components/ui/Button';
 import { ShoppingBag, Users, Briefcase, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { useUser } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
   title: 'Company Dashboard',
 };
 
 export default function CompanyOverview() {
+  const { user } = useUser();
+
   const stats = [
     { name: 'Total Orders', value: '0', icon: ShoppingBag },
     { name: 'Team Members', value: '0', icon: Users },
@@ -21,8 +24,14 @@ export default function CompanyOverview() {
       <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="h-8 w-8 rounded bg-gradient-to-br from-primary-blue to-primary-purple flex items-center justify-center font-bold text-white shadow-lg">A</div>
-            <h1 className="text-3xl font-bold text-white">Acme Corp Dashboard</h1>
+            {user?.imageUrl ? (
+              <img src={user.imageUrl} alt="Avatar" className="h-8 w-8 rounded object-cover shadow-lg" />
+            ) : (
+              <div className="h-8 w-8 rounded bg-gradient-to-br from-primary-blue to-primary-purple flex items-center justify-center font-bold text-white shadow-lg">
+                {user?.firstName?.charAt(0) || 'C'}
+              </div>
+            )}
+            <h1 className="text-3xl font-bold text-white">{user?.fullName || 'Company'} Dashboard</h1>
           </div>
           <p className="text-text-secondary">Manage your team, track projects, and monitor your monthly budget.</p>
         </div>
@@ -74,10 +83,16 @@ export default function CompanyOverview() {
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex justify-between items-center p-3 rounded-xl border border-border/50">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-surface flex items-center justify-center text-xs border border-white/5">JD</div>
+                    {user?.imageUrl ? (
+                      <img src={user.imageUrl} alt="Avatar" className="h-8 w-8 rounded-full object-cover border border-white/5" />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-surface flex items-center justify-center text-xs border border-white/5">
+                        {user?.firstName?.charAt(0) || 'U'}
+                      </div>
+                    )}
                     <div>
                       <p className="text-white text-sm font-medium">Marketing Materials</p>
-                      <p className="text-xs text-text-secondary">Ordered by John Doe</p>
+                      <p className="text-xs text-text-secondary">Ordered by {user?.fullName || 'User'}</p>
                     </div>
                   </div>
                   <span className="font-semibold text-white">-$450</span>

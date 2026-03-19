@@ -2,12 +2,15 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { DollarSign, ShoppingBag, Eye, Star, TrendingUp, PackageOpen, ListTodo } from 'lucide-react';
 import type { Metadata } from 'next';
+import { useUser } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
   title: 'Seller Dashboard',
 };
 
 export default function SellerOverview() {
+  const { user } = useUser();
+
   const stats = [
     { name: 'Total Earnings', value: '$0', icon: DollarSign, trend: '--' },
     { name: 'Active Orders', value: '0', icon: ShoppingBag, trend: '--' },
@@ -19,7 +22,7 @@ export default function SellerOverview() {
     <div className="space-y-8">
       <div className="flex justify-between items-end mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome back, Sarah! 👋</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user?.firstName || 'there'} 👋</h1>
           <p className="text-text-secondary">Here is what is happening with your freelance business today.</p>
         </div>
         <Button>Create New Gig</Button>
