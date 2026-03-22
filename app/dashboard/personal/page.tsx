@@ -3,15 +3,38 @@ import { Button } from '@/components/ui/Button';
 import { ShoppingBag, Heart, Clock, Search, FolderHeart } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { auth } from '@clerk/nextjs/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export const metadata: Metadata = {
   title: 'My Dashboard',
 };
 
-export default function PersonalOverview() {
+export default async function PersonalOverview() {
+  const { userId } = auth();
+
+  let activeOrdersCount = 0;
+  let completedCount = 0;
+  let activeOrders: any[] = [];
+
+  if (userId) {
+    const supabase = createServerSupabaseClient();
+    const { data: profile } = await supabase.from('profiles').select('id').eq('clerk_id', userId).single();
+    if (profile) {
+      const [{ count: activeCount }, { count: compCount }, { data: orders }] = await Promise.all([
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('buyer_id', profile.id).eq('status', 'active'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('buyer_id', profile.id).eq('status', 'completed'),
+        supabase.from('orders').select('*').eq('buyer_id', profile.id).eq('status', 'active').order('created_at', { ascending: false }).limit(5)
+      ]);
+      activeOrdersCount = activeCount || 0;
+      completedCount = compCount || 0;
+      activeOrders = orders || [];
+    }
+  }
+
   const stats = [
-    { name: 'Active Orders', value: '0', icon: ShoppingBag },
-    { name: 'Completed Projects', value: '0', icon: Clock },
+    { name: 'Active Orders', value: activeOrdersCount.toString(), icon: ShoppingBag },
+    { name: 'Completed Projects', value: completedCount.toString(), icon: Clock },
     { name: 'Saved Gigs', value: '0', icon: Heart },
   ];
 
@@ -50,13 +73,27 @@ export default function PersonalOverview() {
             <Link href="/dashboard/personal/orders" className="text-sm text-primary-blue hover:text-white transition-colors">View All</Link>
           </div>
 
-          <div className="flex flex-col items-center justify-center py-10 text-center">
-            <ShoppingBag className="w-12 h-12 text-white/20 mb-4" />
-            <h3 className="text-white font-semibold text-lg mb-2">No active orders</h3>
-            <p className="text-text-secondary text-sm">
-              Your orders will appear here once you make a purchase.
-            </p>
-          </div>
+          {activeOrders.length > 0 ? (
+            <div className="space-y-4">
+              {activeOrders.map((order) => (
+                <div key={order.id} className="flex justify-between items-center p-4 rounded-xl border border-border/50">
+                  <div>
+                    <p className="text-white font-medium">Order #{order.id.slice(0, 8)}</p>
+                    <p className="text-xs text-text-secondary capitalize">Status: {order.status}</p>
+                  </div>
+                  <span className="font-semibold text-white">${order.amount}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <ShoppingBag className="w-12 h-12 text-white/20 mb-4" />
+              <h3 className="text-white font-semibold text-lg mb-2">No active orders</h3>
+              <p className="text-text-secondary text-sm">
+                Your orders will appear here once you make a purchase.
+              </p>
+            </div>
+          )}
         </Card>
 
         <Card className="p-6">

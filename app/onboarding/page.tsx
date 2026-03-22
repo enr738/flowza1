@@ -48,8 +48,13 @@ export default function OnboardingPage() {
   const { user } = useUser();
   const router = useRouter();
 
-  const handleRoleSelect = (roleTitle: string, roleHref: string) => {
+  const handleRoleSelect = async (roleTitle: string, roleHref: string) => {
     localStorage.setItem('flowza_role', roleTitle);
+    await fetch('/api/profile/role', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: roleTitle }),
+    });
     router.push(roleHref);
   };
 

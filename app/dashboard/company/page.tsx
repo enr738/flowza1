@@ -1,20 +1,60 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ShoppingBag, Users, Briefcase, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
+import { createClient } from '@/lib/supabase';
 
 export default function CompanyOverview() {
   const { user } = useUser();
 
-  const stats = [
+  const [stats, setStats] = useState([
     { name: 'Total Orders', value: '0', icon: ShoppingBag },
     { name: 'Team Members', value: '0', icon: Users },
     { name: 'Monthly Spend', value: '$0', icon: TrendingUp },
     { name: 'Active Projects', value: '0', icon: Briefcase },
-  ];
+  ]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!user) return;
+      const supabase = createClient();
+
+      const { data: profile } = await supabase.from('profiles').select('id').eq('clerk_id', user.id).single();
+      if (!profile) {
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: companyProfile } = await supabase.from('company_profiles').select('id').eq('profile_id', profile.id).single();
+      if (!companyProfile) {
+        setIsLoading(false);
+        return;
+      }
+
+      const [{ count: ordersCount }, { count: membersCount }, { data: budget }, { count: projectsCount }] = await Promise.all([
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('company_id', companyProfile.id),
+        supabase.from('company_members').select('*', { count: 'exact', head: true }).eq('company_id', companyProfile.id),
+        supabase.from('company_budgets').select('*').eq('company_id', companyProfile.id).single(),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('company_id', companyProfile.id).eq('status', 'active')
+      ]);
+
+      const totalSpend = budget?.spent_amount || 0;
+
+      setStats([
+        { name: 'Total Orders', value: ordersCount?.toString() || '0', icon: ShoppingBag },
+        { name: 'Team Members', value: membersCount?.toString() || '0', icon: Users },
+        { name: 'Monthly Spend', value: `$${totalSpend}`, icon: TrendingUp },
+        { name: 'Active Projects', value: projectsCount?.toString() || '0', icon: Briefcase },
+      ]);
+      setIsLoading(false);
+    }
+    fetchData();
+  }, [user]);
 
   return (
     <div className="space-y-8">
