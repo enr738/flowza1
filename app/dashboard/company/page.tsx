@@ -1,13 +1,10 @@
+'use client';
+
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ShoppingBag, Users, Briefcase, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import type { Metadata } from 'next';
 import { useUser } from '@clerk/nextjs';
-
-export const metadata: Metadata = {
-  title: 'Company Dashboard',
-};
 
 export default function CompanyOverview() {
   const { user } = useUser();
