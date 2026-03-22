@@ -4,6 +4,7 @@ import { Webhook } from 'svix';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export async function POST(req: Request) {
+    console.log('Webhook secret exists:', !!process.env.CLERK_WEBHOOK_SECRET);
     const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
     if (!WEBHOOK_SECRET) {
         return new Response('Webhook secret not found', { status: 400 });
