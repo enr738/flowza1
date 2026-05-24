@@ -6,6 +6,15 @@
   body {
     @apply bg-background-dark text-text-primary antialiased selection:bg-primary-purple/30 selection:text-white;
   }
+
+  /* RTL font switching */
+  .font-inter body {
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  .font-cairo body {
+    font-family: var(--font-cairo), system-ui, sans-serif;
+  }
 }
 
 @layer utilities {
@@ -20,6 +29,37 @@
   .glow {
     box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
   }
+}
+
+/* Language toggle pill */
+.lang-toggle {
+  display: inline-flex;
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.lang-toggle button {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  color: #9E97B8;
+}
+
+.lang-toggle button.active {
+  background: linear-gradient(135deg, #4DA6FF 0%, #7C3AED 100%);
+  color: #fff;
+}
+
+.lang-toggle button:not(.active):hover {
+  color: #fff;
+}
+
+/* RTL-specific overrides */
+[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
 }
 
 /* Custom Webkit Scrollbar */

@@ -1,51 +1,166 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Star, Clock, CheckCircle2, ChevronRight, Share2, Heart, MessageCircle } from 'lucide-react';
+import { Star, Clock, CheckCircle2, ChevronRight, Share2, Heart, MessageCircle, PackageOpen } from 'lucide-react';
+import { createClient } from '@/lib/supabase';
 
-const mockGig = {
-  id: '1',
-  title: 'I will design a modern minimal logo for your brand',
-  sellerName: 'Sarah J.',
-  sellerAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
-  sellerLevel: 'Top Rated Seller',
-  price: 150,
-  rating: 4.9,
-  ratingCount: 128,
-  imageUrls: [
-    'https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=1200',
-  ],
-  description: `Hello! I'm Sarah, a professional brand designer with over 8 years of experience helping startups and established companies build their visual identities.
-
-In this service, I will design a clean, modern, and memorable minimalist logo that perfectly represents your business values and resonates with your target audience.
-
-**What you will get:**
-• 3 Unique Logo Concepts
-• High-Resolution Files (PNG, JPG, PDF)
-• Scalable Vector Files (AI, EPS, SVG)
-• Full Copyright Ownership
-• 3D Mockups
-• Unlimited Revisions
-
-I believe in quality over quantity and work closely with my clients to ensure 100% satisfaction. Let's build something great together!`,
-  packages: {
-    basic: { name: 'Starter Label', price: 150, deliveryDays: 3, revisions: 3, features: ['1 Logo Concept', 'High-Res PNG & JPG', '3D Mockup'] },
-    standard: { name: 'Pro Identity', price: 280, deliveryDays: 5, revisions: 'Unlimited', features: ['3 Logo Concepts', 'All Source Files (Vecor)', '3D Mockups', 'Social Media Kit'] },
-    premium: { name: 'Full Branding', price: 500, deliveryDays: 7, revisions: 'Unlimited', features: ['5 Logo Concepts', 'All Source Files', 'Social Media Kit', 'Brand Style Guide', 'Stationery Design'] },
-  }
-};
+interface GigDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  category: string | null;
+  images: string[] | null;
+  rating_avg: number;
+  rating_count: number;
+  seller_id: string;
+  profiles: {
+    username: string;
+    avatar_url: string | null;
+    clerk_id: string;
+  } | null;
+}
 
 export default function GigDetailPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const [gig, setGig] = useState<GigDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [activePackage, setActivePackage] = useState<'basic' | 'standard' | 'premium'>('standard');
-  const pkg = mockGig.packages[activePackage];
+  const [orderLoading, setOrderLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchGig() {
+      setIsLoading(true);
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('gigs')
+        .select('*, profiles(username, avatar_url, clerk_id)')
+        .eq('id', params.id)
+        .single();
+
+      if (error || !data) {
+        setNotFound(true);
+      } else {
+        setGig(data as GigDetail);
+      }
+      setIsLoading(false);
+    }
+    fetchGig();
+  }, [params.id]);
+
+  const getPackages = (basePrice: number) => ({
+    basic: {
+      name: 'Basic',
+      price: basePrice,
+      deliveryDays: 3,
+      revisions: 2,
+      features: ['1 Delivery', 'Source Files', '2 Revisions'],
+    },
+    standard: {
+      name: 'Standard',
+      price: Math.round(basePrice * 1.8),
+      deliveryDays: 5,
+      revisions: 5,
+      features: ['1 Delivery', 'Source Files', '5 Revisions', 'Priority Support'],
+    },
+    premium: {
+      name: 'Premium',
+      price: Math.round(basePrice * 3),
+      deliveryDays: 7,
+      revisions: 'Unlimited' as string | number,
+      features: ['1 Delivery', 'Source Files', 'Unlimited Revisions', 'Priority Support', 'Commercial Use'],
+    },
+  });
+
+  const handleOrder = async () => {
+    if (!gig) return;
+    setOrderLoading(true);
+    const packages = getPackages(gig.price);
+    const pkg = packages[activePackage];
+    try {
+      const res = await fetch('/api/payment/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gigId: gig.id,
+          gigTitle: gig.title,
+          amount: pkg.price,
+          sellerId: gig.profiles?.clerk_id || '',
+        }),
+      });
+      const data = await res.json();
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      }
+    } catch (error) {
+      console.error('Order error:', error);
+    } finally {
+      setOrderLoading(false);
+    }
+  };
+
+  const handleContactSeller = () => {
+    if (!gig) return;
+    router.push(`/messages/new?sellerId=${gig.seller_id}`);
+  };
+
+  if (isLoading) {
+    return (
+      <>
+        <Navbar />
+        <main className="flex-1 py-10 px-4">
+          <div className="container mx-auto max-w-7xl">
+            <div className="animate-pulse space-y-6">
+              <div className="h-4 w-48 bg-white/10 rounded" />
+              <div className="h-8 w-96 bg-white/10 rounded" />
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 bg-white/10 rounded-full" />
+                <div className="space-y-2">
+                  <div className="h-4 w-32 bg-white/10 rounded" />
+                  <div className="h-3 w-24 bg-white/10 rounded" />
+                </div>
+              </div>
+              <div className="aspect-video bg-white/5 rounded-2xl" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (notFound || !gig) {
+    return (
+      <>
+        <Navbar />
+        <main className="flex-1 flex flex-col items-center justify-center py-32 px-4 text-center">
+          <PackageOpen className="w-16 h-16 text-white/20 mb-4" />
+          <h1 className="text-3xl font-bold text-white mb-3">Gig Not Found</h1>
+          <p className="text-text-secondary mb-6">This service may have been removed or does not exist.</p>
+          <Link href="/explore">
+            <Button>Browse Services</Button>
+          </Link>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  const packages = getPackages(gig.price);
+  const pkg = packages[activePackage];
+  const imageUrls = gig.images && gig.images.length > 0 ? gig.images : ['/placeholder-gig.png'];
+  const sellerName = gig.profiles?.username || 'Freelancer';
+  const sellerAvatar = gig.profiles?.avatar_url || '';
+  const sellerLevel = 'Seller';
 
   return (
     <>
@@ -54,32 +169,40 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
         <div className="container mx-auto max-w-7xl">
           {/* Breadcrumbs */}
           <div className="flex items-center text-sm text-text-secondary mb-6 gap-2">
-            <span>Home</span> <ChevronRight className="h-4 w-4" />
-            <span>Design</span> <ChevronRight className="h-4 w-4" />
-            <span className="text-white">Logo Design</span>
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <ChevronRight className="h-4 w-4" />
+            <Link href="/explore" className="hover:text-white transition-colors">{gig.category || 'Services'}</Link>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-white line-clamp-1">{gig.title}</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Left Column (Gig Content) */}
             <div className="lg:col-span-2 space-y-8">
               <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">
-                {mockGig.title}
+                {gig.title}
               </h1>
 
               {/* Seller Info Bar */}
               <div className="flex items-center gap-4 border-b border-border pb-6">
                 <div className="relative h-12 w-12 rounded-full overflow-hidden bg-surface">
-                  <Image src={mockGig.sellerAvatar} alt={mockGig.sellerName} fill className="object-cover" />
+                  {sellerAvatar ? (
+                    <Image src={sellerAvatar} alt={sellerName} fill className="object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-primary flex items-center justify-center text-white font-bold">
+                      {sellerName.charAt(0)}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-white">{mockGig.sellerName}</span>
-                    <span className="text-primary-blue text-sm">| {mockGig.sellerLevel}</span>
+                    <span className="font-semibold text-white">{sellerName}</span>
+                    <span className="text-primary-blue text-sm">| {sellerLevel}</span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 text-sm">
                     <Star className="h-4 w-4 fill-warning text-warning" />
-                    <span className="text-white font-medium">{mockGig.rating}</span>
-                    <span className="text-text-secondary">({mockGig.ratingCount} reviews)</span>
+                    <span className="text-white font-medium">{(gig.rating_avg || 0).toFixed(1)}</span>
+                    <span className="text-text-secondary">({gig.rating_count || 0} reviews)</span>
                   </div>
                 </div>
               </div>
@@ -87,26 +210,34 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
               {/* Image Gallery */}
               <div className="space-y-4">
                 <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-surface border border-border">
-                  <Image src={mockGig.imageUrls[activeImage]} alt="Gig Image" fill className="object-cover" />
+                  {imageUrls[activeImage] && imageUrls[activeImage] !== '/placeholder-gig.png' ? (
+                    <Image src={imageUrls[activeImage]} alt="Gig Image" fill className="object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <PackageOpen className="w-16 h-16 text-white/20" />
+                    </div>
+                  )}
                 </div>
-                <div className="grid grid-cols-5 gap-4">
-                  {mockGig.imageUrls.map((url, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveImage(i)}
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${activeImage === i ? 'border-primary-blue opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                    >
-                      <Image src={url} alt={`Thumbnail ${i}`} fill className="object-cover" />
-                    </button>
-                  ))}
-                </div>
+                {imageUrls.length > 1 && (
+                  <div className="grid grid-cols-5 gap-4">
+                    {imageUrls.map((url, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveImage(i)}
+                        className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${activeImage === i ? 'border-primary-blue opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                      >
+                        <Image src={url} alt={`Thumbnail ${i}`} fill className="object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Description */}
               <div className="pt-6">
                 <h2 className="text-2xl font-bold text-white mb-4">About This Service</h2>
                 <div className="text-text-secondary leading-relaxed whitespace-pre-wrap">
-                  {mockGig.description}
+                  {gig.description || 'No description provided.'}
                 </div>
               </div>
             </div>
@@ -137,12 +268,8 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
                   <div className="p-6 space-y-6">
                     <div className="flex justify-between items-start">
                       <h3 className="text-xl font-bold text-white">{pkg.name}</h3>
-                      <span className="text-2xl font-light text-white">${pkg.price}</span>
+                      <span className="text-2xl font-light text-white">{pkg.price} DZD</span>
                     </div>
-
-                    <p className="text-text-secondary text-sm">
-                      {activePackage === 'basic' ? 'Essential startup package.' : activePackage === 'standard' ? 'Perfect for growing businesses.' : 'The ultimate branding experience.'}
-                    </p>
 
                     <div className="flex items-center gap-4 text-sm font-medium text-white mb-6">
                       <div className="flex items-center gap-1.5">
@@ -162,9 +289,15 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
                       ))}
                     </ul>
 
-                    <Button size="lg" className="w-full">
-                      Continue (${pkg.price})
-                    </Button>
+                    <button
+                      onClick={handleOrder}
+                      disabled={orderLoading}
+                      className="w-full px-8 py-4 bg-gradient-to-r from-[#4DA6FF] to-[#7C3AED]
+                                 text-white font-bold rounded-xl hover:opacity-90
+                                 transition-all duration-200 disabled:opacity-50"
+                    >
+                      {orderLoading ? 'Processing...' : `Order Now – ${pkg.price} DZD`}
+                    </button>
                     <Button variant="ghost" className="w-full text-sm">
                       Compare Packages
                     </Button>
@@ -174,11 +307,17 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
                 {/* Contact Seller */}
                 <Card className="p-6 text-center">
                   <div className="relative h-20 w-20 mx-auto rounded-full overflow-hidden bg-surface mb-4">
-                    <Image src={mockGig.sellerAvatar} alt={mockGig.sellerName} fill className="object-cover" />
+                    {sellerAvatar ? (
+                      <Image src={sellerAvatar} alt={sellerName} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-bold">
+                        {sellerName.charAt(0)}
+                      </div>
+                    )}
                   </div>
-                  <h3 className="font-bold text-white mb-1">{mockGig.sellerName}</h3>
-                  <p className="text-sm text-text-secondary mb-4">{mockGig.sellerLevel}</p>
-                  <Button variant="outline" className="w-full gap-2">
+                  <h3 className="font-bold text-white mb-1">{sellerName}</h3>
+                  <p className="text-sm text-text-secondary mb-4">{sellerLevel}</p>
+                  <Button variant="outline" className="w-full gap-2" onClick={handleContactSeller}>
                     <MessageCircle className="h-4 w-4" /> Contact Seller
                   </Button>
                 </Card>

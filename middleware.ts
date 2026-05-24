@@ -6,10 +6,13 @@ export default authMiddleware({
         '/explore(.*)',
         '/gigs(.*)',
         '/contact',
+        '/faq',
+        '/terms',
         '/sign-in(.*)',
         '/sign-up(.*)',
         '/api/contact/whatsapp',
         '/api/webhooks/clerk',
+        '/api/payment/webhook',
     ]
 });
 

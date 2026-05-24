@@ -1,12 +1,30 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Target, User, Building2, ArrowRight } from 'lucide-react';
+import { Target, User, Building2, ArrowRight, Loader2 } from 'lucide-react';
+import { createClient } from '@/lib/supabase';
+
+function getRoleDashboard(role: string): string {
+  switch (role) {
+    case 'Seller':
+    case 'seller':
+      return '/dashboard/seller';
+    case 'Personal Buyer':
+    case 'buyer_personal':
+      return '/dashboard/personal';
+    case 'Company':
+    case 'buyer_company':
+      return '/dashboard/company';
+    default:
+      return '';
+  }
+}
 
 const ROLES = [
   {
@@ -45,8 +63,37 @@ const ROLES = [
 ] as const;
 
 export default function OnboardingPage() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
+  const [checkingRole, setCheckingRole] = useState(true);
+
+  // Check if user already has a role — redirect if so
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) {
+      router.push('/sign-in');
+      return;
+    }
+
+    async function checkExistingRole() {
+      const supabase = createClient();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('clerk_id', user!.id)
+        .single();
+
+      if (profile?.role) {
+        const dashboard = getRoleDashboard(profile.role);
+        if (dashboard) {
+          router.push(dashboard);
+          return;
+        }
+      }
+      setCheckingRole(false);
+    }
+    checkExistingRole();
+  }, [user, isLoaded, router]);
 
   const handleRoleSelect = async (roleTitle: string, roleHref: string) => {
     localStorage.setItem('flowza_role', roleTitle);
@@ -57,6 +104,18 @@ export default function OnboardingPage() {
     });
     router.push(roleHref);
   };
+
+  if (!isLoaded || checkingRole) {
+    return (
+      <>
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 text-primary-blue animate-spin" />
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

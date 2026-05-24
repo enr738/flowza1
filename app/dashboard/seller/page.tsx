@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { DollarSign, ShoppingBag, Eye, Star, TrendingUp, PackageOpen, ListTodo } from 'lucide-react';
@@ -9,6 +10,7 @@ import { createClient } from '@/lib/supabase';
 
 export default function SellerOverview() {
   const { user } = useUser();
+  const router = useRouter();
 
   const [stats, setStats] = useState([
     { name: 'Total Earnings', value: '$0', icon: DollarSign, trend: '--' },
@@ -58,7 +60,7 @@ export default function SellerOverview() {
           <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user?.firstName || 'there'} 👋</h1>
           <p className="text-text-secondary">Here is what is happening with your freelance business today.</p>
         </div>
-        <Button>Create New Gig</Button>
+        <Button onClick={() => router.push('/dashboard/seller/gigs/new')}>Create New Gig</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

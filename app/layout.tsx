@@ -1,9 +1,18 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Cairo } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
+import { LanguageProvider } from '@/context/LanguageContext';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  variable: '--font-cairo',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -49,11 +58,13 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" className="dark">
-        <body className={inter.className}>
-          <div className="flex min-h-screen flex-col">
-            {children}
-          </div>
+      <html lang="en" className={`dark ${inter.variable} ${cairo.variable} font-inter`} suppressHydrationWarning>
+        <body>
+          <LanguageProvider>
+            <div className="flex min-h-screen flex-col">
+              {children}
+            </div>
+          </LanguageProvider>
         </body>
       </html>
     </ClerkProvider>
