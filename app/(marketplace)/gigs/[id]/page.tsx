@@ -8,8 +8,10 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Star, Clock, CheckCircle2, ChevronRight, Share2, Heart, MessageCircle, PackageOpen } from 'lucide-react';
+import { Star, Clock, CheckCircle2, ChevronRight, Share2, Heart, MessageCircle, PackageOpen, Palette, Code2, PenTool, Megaphone, Video } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
+import { useUser } from '@clerk/nextjs';
+import { getProfileByClerkId, getProfileById } from '@/lib/profile';
 
 interface GigDetail {
   id: string;
@@ -28,14 +30,31 @@ interface GigDetail {
   } | null;
 }
 
+const categoryIcons: Record<string, React.ElementType> = {
+  Design: Palette,
+  Development: Code2,
+  Writing: PenTool,
+  Marketing: Megaphone,
+  Video: Video,
+};
+
 export default function GigDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { user } = useUser();
   const [gig, setGig] = useState<GigDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [myProfileId, setMyProfileId] = useState<string | null>(null);
+  const [sellerProfile, setSellerProfile] = useState<any>(null);
   const [notFound, setNotFound] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
-  const [activePackage, setActivePackage] = useState<'basic' | 'standard' | 'premium'>('standard');
   const [orderLoading, setOrderLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [toast, setToast] = useState('');
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2000);
+  };
 
   useEffect(() => {
     async function fetchGig() {
@@ -43,7 +62,7 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('gigs')
-        .select('*, profiles(username, avatar_url, clerk_id)')
+        .select('*, profiles!seller_id(username, avatar_url, clerk_id)')
         .eq('id', params.id)
         .single();
 
@@ -51,41 +70,23 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
         setNotFound(true);
       } else {
         setGig(data as GigDetail);
+        
+        const seller = await getProfileById(data.seller_id);
+        setSellerProfile(seller);
+        
+        if (user) {
+          const myProfile = await getProfileByClerkId(user.id);
+          setMyProfileId(myProfile?.id);
+        }
       }
       setIsLoading(false);
     }
     fetchGig();
-  }, [params.id]);
-
-  const getPackages = (basePrice: number) => ({
-    basic: {
-      name: 'Basic',
-      price: basePrice,
-      deliveryDays: 3,
-      revisions: 2,
-      features: ['1 Delivery', 'Source Files', '2 Revisions'],
-    },
-    standard: {
-      name: 'Standard',
-      price: Math.round(basePrice * 1.8),
-      deliveryDays: 5,
-      revisions: 5,
-      features: ['1 Delivery', 'Source Files', '5 Revisions', 'Priority Support'],
-    },
-    premium: {
-      name: 'Premium',
-      price: Math.round(basePrice * 3),
-      deliveryDays: 7,
-      revisions: 'Unlimited' as string | number,
-      features: ['1 Delivery', 'Source Files', 'Unlimited Revisions', 'Priority Support', 'Commercial Use'],
-    },
-  });
+  }, [params.id, user]);
 
   const handleOrder = async () => {
     if (!gig) return;
     setOrderLoading(true);
-    const packages = getPackages(gig.price);
-    const pkg = packages[activePackage];
     try {
       const res = await fetch('/api/payment/checkout', {
         method: 'POST',
@@ -93,7 +94,7 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
         body: JSON.stringify({
           gigId: gig.id,
           gigTitle: gig.title,
-          amount: pkg.price,
+          amount: gig.price,
           sellerId: gig.profiles?.clerk_id || '',
         }),
       });
@@ -108,9 +109,22 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleContactSeller = () => {
-    if (!gig) return;
-    router.push(`/messages/new?sellerId=${gig.seller_id}`);
+  const handleSave = async () => {
+    if (!user || !gig) {
+      showToast('Please sign in to save gigs.');
+      return;
+    }
+    setIsSaved(prev => !prev);
+    showToast(isSaved ? 'Removed from saved' : 'Saved!');
+  };
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      showToast('Link copied!');
+    } catch {
+      showToast('Could not copy link.');
+    }
   };
 
   if (isLoading) {
@@ -155,12 +169,12 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
     );
   }
 
-  const packages = getPackages(gig.price);
-  const pkg = packages[activePackage];
-  const imageUrls = gig.images && gig.images.length > 0 ? gig.images : ['/placeholder-gig.png'];
-  const sellerName = gig.profiles?.username || 'Freelancer';
-  const sellerAvatar = gig.profiles?.avatar_url || '';
+  const hasImages = gig.images && gig.images.length > 0;
+  const imageUrls = hasImages ? gig.images! : [];
+  const sellerName = sellerProfile?.username || 'Freelancer';
+  const sellerAvatar = sellerProfile?.avatar_url || '';
   const sellerLevel = 'Seller';
+  const CategoryIcon = categoryIcons[gig.category || ''] || PackageOpen;
 
   return (
     <>
@@ -210,15 +224,16 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
               {/* Image Gallery */}
               <div className="space-y-4">
                 <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-surface border border-border">
-                  {imageUrls[activeImage] && imageUrls[activeImage] !== '/placeholder-gig.png' ? (
+                  {hasImages && imageUrls[activeImage] ? (
                     <Image src={imageUrls[activeImage]} alt="Gig Image" fill className="object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <PackageOpen className="w-16 h-16 text-white/20" />
+                    <div className="w-full h-full bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#4c1d95] flex flex-col items-center justify-center gap-3">
+                      <CategoryIcon className="w-20 h-20 text-white/20" />
+                      <span className="text-white/30 text-sm font-medium">{gig.category || 'Service'}</span>
                     </div>
                   )}
                 </div>
-                {imageUrls.length > 1 && (
+                {hasImages && imageUrls.length > 1 && (
                   <div className="grid grid-cols-5 gap-4">
                     {imageUrls.map((url, i) => (
                       <button
@@ -247,41 +262,34 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
               <div className="sticky top-24 space-y-6">
                 {/* Actions */}
                 <div className="flex gap-4">
-                  <Button variant="outline" className="flex-1 gap-2"><Heart className="h-4 w-4" /> Save</Button>
-                  <Button variant="outline" className="flex-1 gap-2"><Share2 className="h-4 w-4" /> Share</Button>
+                  <Button variant="outline" className="flex-1 gap-2" onClick={handleSave}>
+                    <Heart className={`h-4 w-4 transition-colors ${isSaved ? 'fill-red-500 text-red-500' : ''}`} />
+                    {isSaved ? 'Saved' : 'Save'}
+                  </Button>
+                  <Button variant="outline" className="flex-1 gap-2" onClick={handleShare}>
+                    <Share2 className="h-4 w-4" /> Share
+                  </Button>
                 </div>
 
-                {/* Pricing Card */}
+                {/* Pricing Card — Single Price */}
                 <Card className="overflow-hidden">
-                  <div className="flex border-b border-border">
-                    {(['basic', 'standard', 'premium'] as const).map(p => (
-                      <button
-                        key={p}
-                        onClick={() => setActivePackage(p)}
-                        className={`flex-1 py-4 text-center text-sm font-semibold capitalize transition-all ${activePackage === p ? 'text-primary-blue border-b-2 border-primary-blue bg-primary-blue/5' : 'text-text-secondary hover:bg-white/5'}`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-
                   <div className="p-6 space-y-6">
                     <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-bold text-white">{pkg.name}</h3>
-                      <span className="text-2xl font-light text-white">{pkg.price} DZD</span>
+                      <h3 className="text-xl font-bold text-white">Service Package</h3>
+                      <span className="text-2xl font-light text-white">{gig.price} DZD</span>
                     </div>
 
                     <div className="flex items-center gap-4 text-sm font-medium text-white mb-6">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="h-4 w-4 text-text-secondary" /> {pkg.deliveryDays} Days Delivery
+                        <Clock className="h-4 w-4 text-text-secondary" /> Delivery Included
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <CheckCircle2 className="h-4 w-4 text-text-secondary" /> {pkg.revisions} Revisions
+                        <CheckCircle2 className="h-4 w-4 text-text-secondary" /> Revisions Included
                       </div>
                     </div>
 
                     <ul className="space-y-3 mb-6">
-                      {pkg.features.map((feature, i) => (
+                      {['1 Delivery', 'Source Files', 'Revisions Included'].map((feature, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-text-secondary">
                           <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
                           <span>{feature}</span>
@@ -296,15 +304,13 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
                                  text-white font-bold rounded-xl hover:opacity-90
                                  transition-all duration-200 disabled:opacity-50"
                     >
-                      {orderLoading ? 'Processing...' : `Order Now – ${pkg.price} DZD`}
+                      {orderLoading ? 'Processing...' : `Order Now – ${gig.price} DZD`}
                     </button>
-                    <Button variant="ghost" className="w-full text-sm">
-                      Compare Packages
-                    </Button>
                   </div>
                 </Card>
 
                 {/* Contact Seller */}
+                {myProfileId !== gig.seller_id && (
                 <Card className="p-6 text-center">
                   <div className="relative h-20 w-20 mx-auto rounded-full overflow-hidden bg-surface mb-4">
                     {sellerAvatar ? (
@@ -317,15 +323,28 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
                   </div>
                   <h3 className="font-bold text-white mb-1">{sellerName}</h3>
                   <p className="text-sm text-text-secondary mb-4">{sellerLevel}</p>
-                  <Button variant="outline" className="w-full gap-2" onClick={handleContactSeller}>
-                    <MessageCircle className="h-4 w-4" /> Contact Seller
-                  </Button>
+                  <Link href={`/messages/new?sellerId=${gig.seller_id}`}>
+                    <Button variant="outline" className="w-full gap-2">
+                      <MessageCircle className="h-4 w-4" /> Contact Seller
+                    </Button>
+                  </Link>
                 </Card>
+                )}
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="px-5 py-3 rounded-xl bg-surface border border-border text-white text-sm font-medium shadow-2xl">
+            {toast}
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );

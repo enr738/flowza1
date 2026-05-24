@@ -41,15 +41,17 @@ export async function POST(req: Request) {
     return new Response('Invalid signature', { status: 401 });
   }
 
-  if (evt.type === 'user.created') {
-    const { id, email_addresses, image_url, username } = evt.data;
-    const { error } = await supabase.from('profiles').insert({
+  if (evt.type === 'user.created' || evt.type === 'user.updated') {
+    const { id, email_addresses, image_url, username, first_name, last_name } = evt.data;
+    const finalUsername = username || `${first_name || ''} ${last_name || ''}`.trim() || email_addresses[0]?.email_address?.split('@')[0] || id;
+    
+    const { error } = await supabase.from('profiles').upsert({
       clerk_id: id,
       email: email_addresses[0]?.email_address,
       avatar_url: image_url,
-      username: username || id,
-    });
-    if (error) console.error('Supabase insert error:', error);
+      username: finalUsername,
+    }, { onConflict: 'clerk_id' });
+    if (error) console.error('Supabase upsert error:', error);
   }
 
   if (evt.type === 'user.deleted') {

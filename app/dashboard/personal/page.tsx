@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { auth } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getProfileByClerkId } from '@/lib/profile';
 
 export const metadata: Metadata = {
   title: 'My Dashboard',
@@ -19,7 +20,7 @@ export default async function PersonalOverview() {
 
   if (userId) {
     const supabase = createServerSupabaseClient();
-    const { data: profile } = await supabase.from('profiles').select('id').eq('clerk_id', userId).single();
+    const profile = await getProfileByClerkId(userId);
     if (profile) {
       const [{ count: activeCount }, { count: compCount }, { data: orders }] = await Promise.all([
         supabase.from('orders').select('*', { count: 'exact', head: true }).eq('buyer_id', profile.id).eq('status', 'active'),

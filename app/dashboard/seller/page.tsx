@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { DollarSign, ShoppingBag, Eye, Star, TrendingUp, PackageOpen, ListTodo } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { createClient } from '@/lib/supabase';
+import { getProfileByClerkId } from '@/lib/profile';
 
 export default function SellerOverview() {
   const { user } = useUser();
@@ -26,7 +27,7 @@ export default function SellerOverview() {
       if (!user) return;
       const supabase = createClient();
 
-      const { data: profile } = await supabase.from('profiles').select('id').eq('clerk_id', user.id).single();
+      const profile = await getProfileByClerkId(user.id);
       if (!profile) {
         setIsLoading(false);
         return;

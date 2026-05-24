@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SlidersHorizontal, Star, PackageOpen } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
+import { useUser } from '@clerk/nextjs';
+import { getProfileByClerkId } from '@/lib/profile';
 
 const CATEGORIES = ['All', 'Design', 'Development', 'Writing', 'Marketing', 'Video'];
 const SORT_OPTIONS = ['Relevant', 'Best Rated', 'Lowest Price', 'Newest'];
@@ -40,15 +42,25 @@ export default function ExplorePage() {
   const [minRating, setMinRating] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery] = useState(initialQuery);
+  const { user: currentUser } = useUser();
 
   useEffect(() => {
     async function fetchGigs() {
       setIsLoading(true);
-      const supabase = createClient();
-      const { data, error } = await supabase
+      const supabaseClient = createClient();
+      let query = supabaseClient
         .from('gigs')
-        .select('*, profiles(username, avatar_url)')
+        .select('*, profiles!seller_id(username, avatar_url)')
         .eq('is_active', true);
+
+      if (currentUser) {
+        const myProfile = await getProfileByClerkId(currentUser.id);
+        if (myProfile) {
+          query = query.neq('seller_id', myProfile.id);
+        }
+      }
+
+      const { data, error } = await query;
 
       if (!error && data) {
         setGigs(data as GigData[]);
@@ -56,7 +68,7 @@ export default function ExplorePage() {
       setIsLoading(false);
     }
     fetchGigs();
-  }, []);
+  }, [currentUser]);
 
   const filtered = gigs
     .filter(g => {
