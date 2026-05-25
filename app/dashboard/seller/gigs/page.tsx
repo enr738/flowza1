@@ -55,6 +55,13 @@ export default function SellerGigs() {
     fetchGigs();
   }, [user, isLoaded, router]);
 
+  async function handleDelete(id: string) {
+    if (!confirm('Are you sure you want to delete this gig?')) return;
+    const supabase = createClient();
+    await supabase.from('gigs').delete().eq('id', id);
+    setGigs(gigs.filter(g => g.id !== id));
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between mb-8">
@@ -120,6 +127,20 @@ export default function SellerGigs() {
                           title="View"
                         >
                           <ExternalLink className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => router.push(`/dashboard/seller/gigs/${gig.id}/edit`)}
+                          className="p-2 rounded-lg hover:bg-white/10 text-text-secondary hover:text-white transition-colors"
+                          title="Edit"
+                        >
+                          <PenTool className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(gig.id)}
+                          className="p-2 rounded-lg hover:bg-red-500/10 text-text-secondary hover:text-red-500 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </td>

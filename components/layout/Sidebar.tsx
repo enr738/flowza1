@@ -18,13 +18,13 @@ const ROUTES: Record<Role, { name: string; href: string; icon: React.ElementType
     { name: 'My Gigs', href: '/dashboard/seller/gigs', icon: Briefcase },
     { name: 'Orders', href: '/dashboard/seller/orders', icon: ShoppingBag },
     { name: 'Earnings', href: '/dashboard/seller/earnings', icon: DollarSign },
-    { name: 'Messages', href: '/messages/1', icon: MessageSquare }, // Mock link
+    { name: 'Messages', href: '/messages', icon: MessageSquare }, // Mock link
   ],
   buyer_personal: [
     { name: 'Overview', href: '/dashboard/personal', icon: LayoutDashboard },
     { name: 'My Orders', href: '/dashboard/personal/orders', icon: ShoppingBag },
     { name: 'Saved', href: '/dashboard/personal/favorites', icon: Heart },
-    { name: 'Messages', href: '/messages/1', icon: MessageSquare },
+    { name: 'Messages', href: '/messages', icon: MessageSquare },
   ],
   buyer_company: [
     { name: 'Overview', href: '/dashboard/company', icon: LayoutDashboard },
@@ -33,7 +33,7 @@ const ROUTES: Record<Role, { name: string; href: string; icon: React.ElementType
     { name: 'Budget', href: '/dashboard/company/budget', icon: PieChart },
     { name: 'Orders', href: '/dashboard/company/orders', icon: ShoppingBag },
     { name: 'Settings', href: '/dashboard/company/settings', icon: Settings },
-    { name: 'Messages', href: '/messages/1', icon: MessageSquare },
+    { name: 'Messages', href: '/messages', icon: MessageSquare },
   ]
 };
 

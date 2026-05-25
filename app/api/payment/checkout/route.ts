@@ -1,5 +1,6 @@
 import { chargilyClient } from '@/lib/chargily';
 import { auth } from '@clerk/nextjs'; // Switched to @clerk/nextjs as it is used in this next.js version 14 based on middleware
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
   const { userId } = auth();
@@ -22,6 +23,26 @@ export async function POST(req: Request) {
         seller_clerk_id: sellerId,
       },
     });
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    
+    const { data: buyer } = await supabase.from('profiles').select('id').eq('clerk_id', userId).single();
+    const { data: seller } = await supabase.from('profiles').select('id').eq('clerk_id', sellerId).single();
+    
+    if (buyer && seller) {
+      const { error: insertError } = await supabase.from('orders').insert({
+        gig_id: gigId,
+        buyer_id: buyer.id,
+        seller_id: seller.id,
+        amount: amount,
+        status: 'pending',
+        stripe_payment_id: checkout.id
+      });
+      if (insertError) console.error('Order insert error:', insertError);
+    }
 
     return Response.json({ checkout_url: checkout.checkout_url });
   } catch (error) {

@@ -95,7 +95,7 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
           gigId: gig.id,
           gigTitle: gig.title,
           amount: gig.price,
-          sellerId: gig.profiles?.clerk_id || '',
+          sellerId: sellerProfile?.clerk_id || '',
         }),
       });
       const data = await res.json();
@@ -297,15 +297,24 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
                       ))}
                     </ul>
 
-                    <button
-                      onClick={handleOrder}
-                      disabled={orderLoading}
-                      className="w-full px-8 py-4 bg-gradient-to-r from-[#4DA6FF] to-[#7C3AED]
-                                 text-white font-bold rounded-xl hover:opacity-90
-                                 transition-all duration-200 disabled:opacity-50"
-                    >
-                      {orderLoading ? 'Processing...' : `Order Now – ${gig.price} DZD`}
-                    </button>
+                    {myProfileId === gig.seller_id ? (
+                      <div className="space-y-3">
+                        <p className="text-center text-sm font-medium text-text-secondary bg-white/5 p-3 rounded-lg border border-border">This is your gig</p>
+                        <Link href={`/dashboard/seller/gigs/${gig.id}/edit`}>
+                          <Button className="w-full">Edit Gig</Button>
+                        </Link>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleOrder}
+                        disabled={orderLoading}
+                        className="w-full px-8 py-4 bg-gradient-to-r from-[#4DA6FF] to-[#7C3AED]
+                                   text-white font-bold rounded-xl hover:opacity-90
+                                   transition-all duration-200 disabled:opacity-50"
+                      >
+                        {orderLoading ? 'Processing...' : `Order Now – ${gig.price} DZD`}
+                      </button>
+                    )}
                   </div>
                 </Card>
 

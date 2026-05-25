@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Clock, Check, XCircle } from 'lucide-react';
 import Image from 'next/image';
+import Navbar from '@/components/layout/Navbar';
 
 export default function MessageThread({ params }: { params: { messageId: string } }) {
   const { user, isLoaded } = useUser();
@@ -122,8 +123,12 @@ export default function MessageThread({ params }: { params: { messageId: string 
 
   if (loading) return <div className="p-8 text-white">Loading...</div>;
 
+  const displayName = otherProfile?.username || otherProfile?.email?.split('@')[0] || 'Unknown';
+
   return (
-    <div className="max-w-4xl mx-auto py-8 px-6 flex flex-col h-[calc(100vh-100px)]">
+    <div className="min-h-screen bg-background-dark flex flex-col">
+      <Navbar />
+      <div className="max-w-4xl mx-auto w-full py-8 px-6 flex flex-col flex-1 h-[calc(100vh-80px)]">
       <Card className="p-4 mb-4 flex items-center gap-4">
         {otherProfile?.avatar_url ? (
           <Image 
@@ -136,11 +141,11 @@ export default function MessageThread({ params }: { params: { messageId: string 
           />
         ) : (
           <div className="w-12 h-12 bg-primary-purple rounded-full flex items-center justify-center text-white text-lg font-bold uppercase shrink-0">
-            {otherProfile?.username?.[0] || 'U'}
+            {displayName[0]}
           </div>
         )}
         <div>
-          <h2 className="text-xl font-bold text-white">{otherProfile?.username || 'Unknown User'}</h2>
+          <h2 className="text-xl font-bold text-white">{displayName}</h2>
         </div>
       </Card>
 
@@ -171,7 +176,7 @@ export default function MessageThread({ params }: { params: { messageId: string 
 
       <div className="flex gap-4">
         <textarea 
-          className="flex-1 bg-surface-dark border border-border rounded-xl p-4 text-white focus:outline-none focus:border-primary-purple h-20 resize-none"
+          className="flex-1 bg-[#1a1628] border border-white/10 rounded-xl p-4 text-white placeholder:text-white/40 focus:outline-none h-20 resize-none"
           placeholder="Type your message..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -185,6 +190,7 @@ export default function MessageThread({ params }: { params: { messageId: string 
         <Button onClick={handleSend} className="h-20 px-8" disabled={!content.trim()}>
           Send
         </Button>
+      </div>
       </div>
     </div>
   );

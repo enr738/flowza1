@@ -73,19 +73,21 @@ export default function NewMessagePage() {
   if (error) return <div className="text-red-500 p-8">{error}</div>;
   if (myProfile?.id === sellerId) return <div className="text-red-500 p-8">You cannot message yourself.</div>;
 
+  const displayName = sellerProfile?.username || sellerProfile?.email?.split('@')[0] || 'Unknown';
+
   return (
     <div className="max-w-2xl mx-auto py-12 px-6">
       <Card className="p-8">
         <div className="flex items-center gap-4 mb-8">
           {sellerProfile?.avatar_url ? (
-            <Image src={sellerProfile.avatar_url} alt="Avatar" width={48} height={48} className="rounded-full" />
+            <Image unoptimized src={sellerProfile.avatar_url} alt="Avatar" width={48} height={48} className="rounded-full" />
           ) : (
             <div className="w-12 h-12 bg-primary-purple rounded-full flex items-center justify-center text-white text-lg font-bold uppercase">
-              {sellerProfile?.username?.[0] || 'U'}
+              {displayName[0]}
             </div>
           )}
           <div>
-            <h2 className="text-2xl font-bold text-white">Message {sellerProfile?.username}</h2>
+            <h2 className="text-2xl font-bold text-white">Message {displayName}</h2>
             <p className="text-text-secondary">Start a conversation.</p>
           </div>
         </div>

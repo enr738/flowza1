@@ -97,11 +97,22 @@ export default function OnboardingPage() {
 
   const handleRoleSelect = async (roleTitle: string, roleHref: string) => {
     localStorage.setItem('flowza_role', roleTitle);
-    await fetch('/api/profile/role', {
+    const res = await fetch('/api/profile/role', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role: roleTitle }),
     });
+    
+    if (!res.ok) {
+      console.error('Failed to save role');
+      return;
+    }
+    
+    // Verify it was saved
+    const supabase = createClient();
+    const { data } = await supabase.from('profiles').select('role').eq('clerk_id', user!.id).single();
+    console.log('Role saved verify:', data?.role);
+    
     router.push(roleHref);
   };
 

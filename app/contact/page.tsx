@@ -56,11 +56,9 @@ export default function ContactPage() {
                   <Mail className="h-4 w-4" />
                   <span>{c.email}</span>
                 </div>
-                <a href={`mailto:${c.email}`} className="w-full">
-                  <Button className="w-full gap-2">
-                    <ExternalLink className="h-4 w-4" />
-                    Send Email
-                  </Button>
+                <a href={`mailto:${c.email}`} className="w-full flex items-center justify-center gap-2 bg-white text-black font-semibold rounded-lg h-10 px-4 hover:bg-white/90 transition-colors">
+                  <ExternalLink className="h-4 w-4" />
+                  Send Email
                 </a>
               </Card>
             ))}

@@ -43,13 +43,19 @@ export async function POST(req: Request) {
 
   if (evt.type === 'user.created' || evt.type === 'user.updated') {
     const { id, email_addresses, image_url, username, first_name, last_name } = evt.data;
-    const finalUsername = username || `${first_name || ''} ${last_name || ''}`.trim() || email_addresses[0]?.email_address?.split('@')[0] || id;
+    const displayName = 
+      (first_name || last_name) 
+        ? [first_name, last_name].filter(Boolean).join(' ').trim()
+        : username 
+        ? username 
+        : email_addresses[0]?.email_address?.split('@')[0] 
+        ?? id;
     
     const { error } = await supabase.from('profiles').upsert({
       clerk_id: id,
       email: email_addresses[0]?.email_address,
       avatar_url: image_url,
-      username: finalUsername,
+      username: displayName,
     }, { onConflict: 'clerk_id' });
     if (error) console.error('Supabase upsert error:', error);
   }
