@@ -157,7 +157,7 @@ export default function MessageThread({ params }: { params: { messageId: string 
             const isMe = msg.sender_id === myProfile?.id;
             return (
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[70%] rounded-2xl p-4 ${isMe ? 'bg-primary-purple text-white rounded-br-none' : 'bg-surface-light border border-border text-white rounded-bl-none'}`}>
+                <div className={`max-w-[70%] rounded-2xl p-4 ${isMe ? 'bg-primary-purple text-white rounded-br-none' : 'bg-surface border border-border text-white rounded-bl-none'}`}>
                   <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                   {isMe && (
                     <div className="flex justify-end mt-2 opacity-70">

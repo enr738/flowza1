@@ -177,7 +177,7 @@ export default function ExplorePage() {
             <div className="flex-1">
               {isLoading ? (
                 <div className={`grid gap-5 grid-cols-1 sm:grid-cols-2 ${showFilters ? 'lg:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
-                  {[1, 2, 3, 4].map(i => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
                     <Card key={i} className="animate-pulse">
                       <div className="aspect-video bg-white/5" />
                       <div className="p-4 space-y-3">

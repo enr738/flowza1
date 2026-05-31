@@ -171,7 +171,7 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
 
   const hasImages = gig.images && gig.images.length > 0;
   const imageUrls = hasImages ? gig.images! : [];
-  const sellerName = sellerProfile?.username || 'Freelancer';
+  const sellerName = sellerProfile?.username || sellerProfile?.email?.split('@')[0] || 'Unknown';
   const sellerAvatar = sellerProfile?.avatar_url || '';
   const sellerLevel = 'Seller';
   const CategoryIcon = categoryIcons[gig.category || ''] || PackageOpen;

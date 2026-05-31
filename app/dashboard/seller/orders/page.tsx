@@ -51,7 +51,13 @@ export default async function SellerOrders() {
                   <h3 className="text-white font-semibold text-lg mb-1">{order.gigs?.title || 'Untitled Gig'}</h3>
                   <p className="text-text-secondary text-sm">Buyer: {order.profiles?.username || 'Unknown'}</p>
                 </div>
-                <span className="bg-primary-blue/20 text-primary-blue px-3 py-1 rounded-full text-xs font-semibold capitalize">{order.status}</span>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+  order.status === 'pending' ? 'bg-warning/20 text-warning' :
+  order.status === 'active' ? 'bg-primary-blue/20 text-primary-blue' :
+  order.status === 'completed' ? 'bg-success/20 text-success' :
+  order.status === 'cancelled' ? 'bg-error/20 text-error' :
+  'bg-white/10 text-text-secondary'
+}`}>{order.status}</span>
               </div>
               <div className="mt-6 flex gap-4 text-sm text-text-secondary">
                 <span>Amount: {order.amount} DZD</span>

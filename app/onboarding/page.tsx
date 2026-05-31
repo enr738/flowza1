@@ -96,15 +96,23 @@ export default function OnboardingPage() {
   }, [user, isLoaded, router]);
 
   const handleRoleSelect = async (roleTitle: string, roleHref: string) => {
+    const roleMap: Record<string, string> = {
+      'Seller': 'seller',
+      'Personal Buyer': 'buyer_personal',
+      'Company': 'buyer_company',
+    };
+    const dbRole = roleMap[roleTitle] || roleTitle;
+    
     localStorage.setItem('flowza_role', roleTitle);
     const res = await fetch('/api/profile/role', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: roleTitle }),
+      body: JSON.stringify({ role: dbRole }),
     });
     
     if (!res.ok) {
-      console.error('Failed to save role');
+      const errData = await res.json().catch(() => ({}));
+      alert(`Failed to save role: ${errData.error || 'Unknown error'}. Please try again.`);
       return;
     }
     

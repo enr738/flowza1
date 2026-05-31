@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
+import Navbar from '@/components/layout/Navbar';
 
 export default function NewMessagePage() {
   const { user, isLoaded } = useUser();
@@ -76,7 +77,9 @@ export default function NewMessagePage() {
   const displayName = sellerProfile?.username || sellerProfile?.email?.split('@')[0] || 'Unknown';
 
   return (
-    <div className="max-w-2xl mx-auto py-12 px-6">
+    <div className="min-h-screen bg-background-dark">
+      <Navbar />
+      <div className="max-w-2xl mx-auto py-12 px-6">
       <Card className="p-8">
         <div className="flex items-center gap-4 mb-8">
           {sellerProfile?.avatar_url ? (
@@ -93,7 +96,7 @@ export default function NewMessagePage() {
         </div>
 
         <textarea 
-          className="w-full bg-surface-dark border border-border rounded-xl p-4 text-white focus:outline-none focus:border-primary-purple min-h-[150px] mb-4"
+          className="w-full bg-background-dark border border-border rounded-xl p-4 text-white focus:outline-none focus:border-primary-purple min-h-[150px] mb-4"
           placeholder="Type your message here..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -102,6 +105,7 @@ export default function NewMessagePage() {
           Send Message
         </Button>
       </Card>
+      </div>
     </div>
   );
 }

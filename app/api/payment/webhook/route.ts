@@ -16,30 +16,14 @@ export async function POST(req: Request) {
   const event = JSON.parse(payload);
 
   if (event.type === 'checkout.paid') {
-    const { gig_id, buyer_clerk_id, seller_clerk_id } = event.data.metadata;
-
-    // Get buyer and seller profiles
-    const { data: buyer } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('clerk_id', buyer_clerk_id)
-      .single();
-
-    const { data: seller } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('clerk_id', seller_clerk_id)
-      .single();
-
-    // Create order in Supabase
-    await supabase.from('orders').insert({
-      gig_id,
-      buyer_id: buyer?.id,
-      seller_id: seller?.id,
-      amount: event.data.amount,
-      status: 'active',
-      stripe_payment_id: event.data.id,
-    });
+    // Update existing pending order to active (checkout API already created the order)
+    const { error: updateError } = await supabase.from('orders')
+      .update({ status: 'active' })
+      .eq('stripe_payment_id', event.data.id);
+    
+    if (updateError) {
+      console.error('Order update error:', updateError);
+    }
   }
 
   return new Response('OK', { status: 200 });

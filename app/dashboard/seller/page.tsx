@@ -14,7 +14,7 @@ export default function SellerOverview() {
   const router = useRouter();
 
   const [stats, setStats] = useState([
-    { name: 'Total Earnings', value: '$0', icon: DollarSign, trend: '--' },
+    { name: 'Total Earnings', value: '0 DZD', icon: DollarSign, trend: '--' },
     { name: 'Active Orders', value: '0', icon: ShoppingBag, trend: '--' },
     { name: 'Profile Views', value: '0', icon: Eye, trend: '--' },
     { name: 'Average Rating', value: '--', icon: Star, trend: '--' },
@@ -43,7 +43,7 @@ export default function SellerOverview() {
       const earnings = completedOrders?.reduce((acc, order) => acc + (order.amount || 0), 0) || 0;
 
       setStats([
-        { name: 'Total Earnings', value: `$${earnings}`, icon: DollarSign, trend: '--' },
+        { name: 'Total Earnings', value: `${earnings} DZD`, icon: DollarSign, trend: '--' },
         { name: 'Active Orders', value: ordersCount?.toString() || '0', icon: ShoppingBag, trend: '--' },
         { name: 'Gigs', value: gigsCount?.toString() || '0', icon: PackageOpen, trend: '--' },
         { name: 'Average Rating', value: '--', icon: Star, trend: '--' },
@@ -102,7 +102,7 @@ export default function SellerOverview() {
                     <p className="text-white font-medium">Order #{order.id.slice(0, 8)}</p>
                     <p className="text-xs text-text-secondary capitalize">Status: {order.status}</p>
                   </div>
-                  <span className="font-semibold text-white">${order.amount}</span>
+                  <span className="font-semibold text-white">{order.amount} DZD</span>
                 </div>
               ))}
             </div>

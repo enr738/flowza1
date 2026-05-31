@@ -19,3 +19,7 @@ export async function getProfileById(profileId: string) {
     .single();
   return data;
 }
+
+export function getDisplayName(profile: any): string {
+  return profile?.username || profile?.email?.split('@')[0] || 'Unknown';
+}

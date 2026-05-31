@@ -82,7 +82,7 @@ export default async function PersonalOverview() {
                     <p className="text-white font-medium">Order #{order.id.slice(0, 8)}</p>
                     <p className="text-xs text-text-secondary capitalize">Status: {order.status}</p>
                   </div>
-                  <span className="font-semibold text-white">${order.amount}</span>
+                  <span className="font-semibold text-white">{order.amount} DZD</span>
                 </div>
               ))}
             </div>

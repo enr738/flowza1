@@ -31,8 +31,8 @@ export function GigCard({ id, title, sellerName, sellerAvatar, price, rating, ra
         </div>
         <div className="p-4 flex flex-col flex-1">
           <div className="flex items-center gap-2 mb-3">
-            <div className="relative h-6 w-6 rounded-full overflow-hidden bg-white/10 shrink-0">
-              {sellerAvatar && (
+            <div className="relative h-6 w-6 rounded-full overflow-hidden bg-primary-purple/30 shrink-0 flex items-center justify-center">
+              {sellerAvatar ? (
                 <Image 
                   src={sellerAvatar} 
                   alt={`${sellerName} profile picture`} 
@@ -42,6 +42,8 @@ export function GigCard({ id, title, sellerName, sellerAvatar, price, rating, ra
                   loading="lazy"
                   className="w-full h-full object-cover" 
                 />
+              ) : (
+                <span className="text-xs font-bold text-white uppercase">{sellerName.charAt(0)}</span>
               )}
             </div>
             <span className="text-sm text-text-secondary font-medium">{sellerName}</span>
@@ -60,7 +62,7 @@ export function GigCard({ id, title, sellerName, sellerAvatar, price, rating, ra
             
             <div className="text-right">
               <span className="text-xs text-text-secondary uppercase tracking-wider">Starting at</span>
-              <p className="text-white font-bold">${price}</p>
+              <p className="text-white font-bold">{price} DZD</p>
             </div>
           </div>
         </div>
