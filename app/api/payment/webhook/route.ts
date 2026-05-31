@@ -1,10 +1,7 @@
 import { verifySignature } from '@chargily/chargily-pay';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase-admin';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 export async function POST(req: Request) {
   const payload = await req.text();

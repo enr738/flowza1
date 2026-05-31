@@ -42,6 +42,7 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { user } = useUser();
   const [gig, setGig] = useState<GigDetail | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
   const [sellerProfile, setSellerProfile] = useState<any>(null);
@@ -78,11 +79,28 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
           const myProfile = await getProfileByClerkId(user.id);
           setMyProfileId(myProfile?.id);
         }
+
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select('*, profiles!reviewer_id(username, avatar_url)')
+          .eq('gig_id', params.id)
+          .order('created_at', { ascending: false });
+        if (reviewsData) setReviews(reviewsData);
+
+        if (user && myProfileId) {
+          const { data: favData } = await supabase
+            .from('favorites')
+            .select('id')
+            .eq('user_id', myProfileId)
+            .eq('gig_id', params.id)
+            .single();
+          if (favData) setIsSaved(true);
+        }
       }
       setIsLoading(false);
     }
     fetchGig();
-  }, [params.id, user]);
+  }, [params.id, user, myProfileId]);
 
   const handleOrder = async () => {
     if (!gig) return;
@@ -114,8 +132,28 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
       showToast('Please sign in to save gigs.');
       return;
     }
-    setIsSaved(prev => !prev);
-    showToast(isSaved ? 'Removed from saved' : 'Saved!');
+    
+    try {
+      if (isSaved) {
+        await fetch('/api/favorites', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gig_id: gig.id })
+        });
+        setIsSaved(false);
+        showToast('Removed from saved');
+      } else {
+        await fetch('/api/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gig_id: gig.id })
+        });
+        setIsSaved(true);
+        showToast('Saved!');
+      }
+    } catch (error) {
+      showToast('Error saving gig');
+    }
   };
 
   const handleShare = async () => {
@@ -210,7 +248,9 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-white">{sellerName}</span>
+                    <Link href={`/profile/${sellerProfile?.username}`}>
+                      <span className="font-semibold text-white hover:text-primary-blue transition-colors">{sellerName}</span>
+                    </Link>
                     <span className="text-primary-blue text-sm">| {sellerLevel}</span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 text-sm">
@@ -253,6 +293,47 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
                 <h2 className="text-2xl font-bold text-white mb-4">About This Service</h2>
                 <div className="text-text-secondary leading-relaxed whitespace-pre-wrap">
                   {gig.description || 'No description provided.'}
+                </div>
+              </div>
+
+              {/* Reviews */}
+              <div className="pt-6 border-t border-border">
+                <h2 className="text-2xl font-bold text-white mb-6">Reviews</h2>
+                <div className="space-y-4">
+                  {reviews.length > 0 ? (
+                    reviews.map(review => (
+                      <Card key={review.id} className="p-6 border-border/50 bg-surface/50">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-surface overflow-hidden relative">
+                              {review.profiles?.avatar_url ? (
+                                <Image src={review.profiles.avatar_url} alt="" fill className="object-cover" />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-primary flex items-center justify-center text-white font-bold">
+                                  {review.profiles?.username?.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium text-white">{review.profiles?.username}</div>
+                              <div className="text-xs text-text-secondary">{new Date(review.created_at).toLocaleDateString()}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'fill-warning text-warning' : 'text-text-secondary/30'}`} />
+                            ))}
+                          </div>
+                        </div>
+                        {review.comment && <p className="text-text-secondary text-sm leading-relaxed">{review.comment}</p>}
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="text-center py-10 bg-surface/30 rounded-xl border border-border/50">
+                      <MessageCircle className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                      <h3 className="text-white font-medium">No reviews yet</h3>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -330,7 +411,9 @@ export default function GigDetailPage({ params }: { params: { id: string } }) {
                       </div>
                     )}
                   </div>
-                  <h3 className="font-bold text-white mb-1">{sellerName}</h3>
+                  <Link href={`/profile/${sellerProfile?.username}`}>
+                    <h3 className="font-bold text-white mb-1 hover:text-primary-blue transition-colors">{sellerName}</h3>
+                  </Link>
                   <p className="text-sm text-text-secondary mb-4">{sellerLevel}</p>
                   <Link href={`/messages/new?sellerId=${gig.seller_id}`}>
                     <Button variant="outline" className="w-full gap-2">

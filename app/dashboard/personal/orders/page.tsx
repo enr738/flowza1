@@ -3,6 +3,7 @@ import { ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { auth } from '@clerk/nextjs/server';
 import { getProfileByClerkId } from '@/lib/profile';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import LeaveReviewButton from '@/components/ui/LeaveReviewButton';
 
 export default async function PersonalOrders({ searchParams }: { searchParams: { success?: string } }) {
   const statuses = ['Active', 'Completed', 'Cancelled'];
@@ -17,7 +18,7 @@ export default async function PersonalOrders({ searchParams }: { searchParams: {
     if (profile) {
       const { data } = await supabase
         .from('orders')
-        .select('*, gigs(title), profiles!seller_id(username)')
+        .select('*, gigs(title), profiles!seller_id(username), reviews(id)')
         .eq('buyer_id', profile.id)
         .order('created_at', { ascending: false });
       if (data) {
@@ -52,32 +53,46 @@ export default async function PersonalOrders({ searchParams }: { searchParams: {
 
       <div className="space-y-4">
         {orders.length > 0 ? (
-          orders.map(order => (
-            <Card key={order.id} className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-white font-semibold text-lg mb-1">{order.gigs?.title || 'Untitled Gig'}</h3>
-                  <p className="text-text-secondary text-sm">Seller: {order.profiles?.username || 'Unknown'}</p>
+          orders.map(order => {
+            const hasReview = order.reviews && order.reviews.length > 0;
+            return (
+              <Card key={order.id} className="p-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-white font-semibold text-lg mb-1">{order.gigs?.title || 'Untitled Gig'}</h3>
+                    <p className="text-text-secondary text-sm">Seller: {order.profiles?.username || 'Unknown'}</p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+    order.status === 'pending' ? 'bg-warning/20 text-warning' :
+    order.status === 'active' ? 'bg-primary-blue/20 text-primary-blue' :
+    order.status === 'completed' ? 'bg-success/20 text-success' :
+    order.status === 'cancelled' ? 'bg-error/20 text-error' :
+    'bg-white/10 text-text-secondary'
+  }`}>{order.status}</span>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-  order.status === 'pending' ? 'bg-warning/20 text-warning' :
-  order.status === 'active' ? 'bg-primary-blue/20 text-primary-blue' :
-  order.status === 'completed' ? 'bg-success/20 text-success' :
-  order.status === 'cancelled' ? 'bg-error/20 text-error' :
-  'bg-white/10 text-text-secondary'
-}`}>{order.status}</span>
-              </div>
-              <div className="mt-6 flex gap-4 text-sm text-text-secondary">
-                <span>Amount: {order.amount} DZD</span>
-                {order.stripe_payment_id && (
-                  <>
-                    <span>•</span>
-                    <span>Paid</span>
-                  </>
-                )}
-              </div>
-            </Card>
-          ))
+                <div className="mt-6 flex justify-between items-end">
+                  <div className="flex gap-4 text-sm text-text-secondary">
+                    <span>Amount: {order.amount} DZD</span>
+                    {order.stripe_payment_id && (
+                      <>
+                        <span>•</span>
+                        <span>Paid</span>
+                      </>
+                    )}
+                  </div>
+                  
+                  {order.status === 'completed' && !hasReview && (
+                    <LeaveReviewButton order={order} />
+                  )}
+                  {order.status === 'completed' && hasReview && (
+                    <div className="text-success text-sm font-medium flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" /> Reviewed
+                    </div>
+                  )}
+                </div>
+              </Card>
+            );
+          })
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <ShoppingBag className="w-16 h-16 text-white/20 mb-4" />

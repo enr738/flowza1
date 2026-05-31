@@ -11,19 +11,11 @@ import { Target, User, Building2, ArrowRight, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 
 function getRoleDashboard(role: string): string {
-  switch (role) {
-    case 'Seller':
-    case 'seller':
-      return '/dashboard/seller';
-    case 'Personal Buyer':
-    case 'buyer_personal':
-      return '/dashboard/personal';
-    case 'Company':
-    case 'buyer_company':
-      return '/dashboard/company';
-    default:
-      return '';
-  }
+  const r = role?.toLowerCase().trim();
+  if (r?.includes('seller')) return '/dashboard/seller';
+  if (r?.includes('personal') || r?.includes('buyer')) return '/dashboard/personal';
+  if (r?.includes('company')) return '/dashboard/company';
+  return '';
 }
 
 const ROLES = [

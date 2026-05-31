@@ -75,20 +75,21 @@ export default function EditGigPage({ params }: { params: { gigId: string } }) {
     setIsSaving(true);
     setError('');
 
-    const supabase = createClient();
-    const { error: updateError } = await supabase
-      .from('gigs')
-      .update({
+    const res = await fetch(`/api/gigs/${params.gigId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         title,
         description,
         category,
         price: Number(price),
         delivery_days: Number(deliveryDays)
       })
-      .eq('id', params.gigId);
+    });
 
-    if (updateError) {
-      setError(updateError.message);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || 'Failed to update gig');
       setIsSaving(false);
     } else {
       router.push('/dashboard/seller/gigs');

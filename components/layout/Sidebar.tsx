@@ -5,11 +5,12 @@ import { usePathname } from 'next/navigation';
 import { 
   Home, Briefcase, ShoppingBag, DollarSign, 
   Heart, Users, Settings, PieChart, CreditCard,
-  MessageSquare, LayoutDashboard
+  MessageSquare, LayoutDashboard, User as UserIcon
 } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase';
 
-// A simple mock since we don't have real auth set up yet.
-// In reality, you'd fetch the user role from Clerk/Supabase
 type Role = 'seller' | 'buyer_personal' | 'buyer_company';
 
 const ROUTES: Record<Role, { name: string; href: string; icon: React.ElementType }[]> = {
@@ -39,13 +40,27 @@ const ROUTES: Record<Role, { name: string; href: string; icon: React.ElementType
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const [profile, setProfile] = useState<any>(null);
   
-  // Hardcoding role based on current URL path for demonstration
+  useEffect(() => {
+    async function fetchProfile() {
+      if (!user) return;
+      const supabase = createClient();
+      const { data } = await supabase.from('profiles').select('username').eq('clerk_id', user.id).single();
+      if (data) setProfile(data);
+    }
+    fetchProfile();
+  }, [user]);
+
   let currentRole: Role = 'buyer_personal';
   if (pathname.includes('/dashboard/seller')) currentRole = 'seller';
   if (pathname.includes('/dashboard/company')) currentRole = 'buyer_company';
 
-  const navLinks = ROUTES[currentRole];
+  const navLinks = [...ROUTES[currentRole]];
+  if (currentRole === 'seller' && profile?.username) {
+    navLinks.push({ name: 'My Profile', href: `/profile/${profile.username}`, icon: UserIcon });
+  }
 
   return (
     <aside className="w-64 border-r border-border bg-background-dark h-[calc(100vh-64px)] overflow-y-auto sticky top-16 hidden md:block">

@@ -7,9 +7,39 @@ import { Card } from '@/components/ui/Card';
 import { Search, PenTool, Code, Layout, Video, Megaphone, ArrowRight, CheckCircle2, PackageOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import { useState } from 'react';
+import { createClient } from '@/lib/supabase';
 
 export default function LandingPage() {
   const { t } = useLanguage();
+  const router = useRouter();
+  const { user, isLoaded } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCtaClick = async () => {
+    if (!isLoaded) return;
+    if (!user) {
+      router.push('/onboarding');
+      return;
+    }
+    
+    setIsLoading(true);
+    const supabase = createClient();
+    const { data } = await supabase.from('profiles').select('role').eq('clerk_id', user.id).single();
+    
+    if (data?.role) {
+      const r = data.role.toLowerCase().trim();
+      if (r.includes('seller')) router.push('/dashboard/seller');
+      else if (r.includes('personal') || r.includes('buyer')) router.push('/dashboard/personal');
+      else if (r.includes('company')) router.push('/dashboard/company');
+      else router.push('/onboarding');
+    } else {
+      router.push('/onboarding');
+    }
+    setIsLoading(false);
+  };
 
   const categories = [
     { key: 'design', icon: PenTool },
@@ -220,11 +250,14 @@ export default function LandingPage() {
             <p className="text-lg md:text-xl text-[#C4BFD8] mb-10 max-w-2xl mx-auto">
               {t('ctaSubtitle')}
             </p>
-            <Link href="/onboarding">
-              <Button size="lg" className="h-14 w-full sm:w-auto px-10">
-                {t('getStartedFree')}
-              </Button>
-            </Link>
+            <button 
+              onClick={handleCtaClick}
+              disabled={isLoading}
+              className="h-14 w-full sm:w-auto px-10 bg-white text-black font-semibold rounded-xl hover:bg-white/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mx-auto"
+            >
+              {isLoading && <span className="animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full" />}
+              {t('joinFlowzaFree') || 'Join Flowza Free'}
+            </button>
           </div>
         </section>
 
