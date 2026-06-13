@@ -2,12 +2,11 @@ import { FolderHeart } from 'lucide-react';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { auth } from '@clerk/nextjs/server';
 import { getProfileByClerkId } from '@/lib/profile';
-import GigCard from '@/components/gigs/GigCard';
+import { GigCard } from '@/components/gigs/GigCard';
 
 export default async function PersonalFavorites() {
   const { userId } = auth();
   let savedGigs: any[] = [];
-
   if (userId) {
     const supabase = createServerSupabaseClient();
     const profile = await getProfileByClerkId(userId);
@@ -31,7 +30,6 @@ export default async function PersonalFavorites() {
         `)
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
-
       if (data) {
         // Map to standard gig format
         savedGigs = data.map((fav: any) => ({
@@ -41,14 +39,12 @@ export default async function PersonalFavorites() {
       }
     }
   }
-
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Saved Gigs</h1>
         <p className="text-text-secondary">Services {"you've"} bookmarked for future reference.</p>
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {savedGigs.length > 0 ? (
           savedGigs.map(gig => (
@@ -58,9 +54,8 @@ export default async function PersonalFavorites() {
               title={gig.title}
               price={gig.price}
               rating={gig.rating_avg}
-              reviews={gig.rating_count}
+              ratingCount={gig.rating_count}
               sellerName={gig.sellerProfile?.username || 'Unknown'}
-              sellerLevel={gig.sellerProfile?.level || 'New Seller'}
               sellerAvatar={gig.sellerProfile?.avatar_url || ''}
               imageUrl={gig.image_url}
             />
