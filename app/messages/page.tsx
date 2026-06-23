@@ -19,6 +19,7 @@ interface Conversation {
   lastMessage: string;
   lastMessageAt: string;
   seedMessageId: string;
+  unreadCount: number;
 }
 
 export default function MessagesInboxPage() {
@@ -43,7 +44,6 @@ export default function MessagesInboxPage() {
         return;
       }
 
-      // Fetch all messages where I am sender or receiver
       const { data: messages } = await supabase
         .from('messages')
         .select('*, sender:profiles!sender_id(id, username, avatar_url, email), receiver:profiles!receiver_id(id, username, avatar_url, email)')
@@ -51,7 +51,6 @@ export default function MessagesInboxPage() {
         .order('created_at', { ascending: false });
 
       if (messages && messages.length > 0) {
-        // Group by conversation partner
         const grouped = new Map<string, Conversation>();
 
         messages.forEach((msg: any) => {
@@ -68,8 +67,17 @@ export default function MessagesInboxPage() {
               otherPartyAvatar: otherPartyProfile?.avatar_url,
               lastMessage: msg.content,
               lastMessageAt: msg.created_at,
-              seedMessageId: msg.id
+              seedMessageId: msg.id,
+              unreadCount: 0,
             });
+          }
+
+          // حساب الرسائل غير المقروءة
+          const isSenderMsg = msg.sender_id === me.id;
+          const partnerId = isSenderMsg ? msg.receiver_id : msg.sender_id;
+          if (!isSenderMsg && !msg.is_read) {
+            const conv = grouped.get(partnerId);
+            if (conv) conv.unreadCount++;
           }
         });
 
@@ -132,11 +140,19 @@ export default function MessagesInboxPage() {
                           {conv.otherPartyUsername[0]}
                         </span>
                       )}
+                      {/* دائرة الإشعار */}
+                      {conv.unreadCount > 0 && (
+                        <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 flex items-center justify-center z-10">
+                          <span className="text-white text-[10px] font-bold">
+                            {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-bold text-white text-lg truncate pr-4">
+                        <h3 className={`font-bold text-lg truncate pr-4 ${conv.unreadCount > 0 ? 'text-white' : 'text-white/80'}`}>
                           {conv.otherPartyUsername}
                         </h3>
                         <span className="text-xs text-text-secondary flex-shrink-0">
@@ -146,7 +162,7 @@ export default function MessagesInboxPage() {
                           })}
                         </span>
                       </div>
-                      <p className="text-sm text-text-secondary truncate pr-8">
+                      <p className={`text-sm truncate pr-8 ${conv.unreadCount > 0 ? 'text-white font-medium' : 'text-text-secondary'}`}>
                         {conv.lastMessage}
                       </p>
                     </div>

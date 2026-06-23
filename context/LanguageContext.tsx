@@ -14,6 +14,7 @@ interface LanguageContextType {
 const translations: Record<string, { en: string; ar: string }> = {
   // Navbar
   joinFlowza: { en: 'Join Flowza', ar: 'انضم إلى فلوزا' },
+  joinFlowzaFree: { en: 'Join Flowza Free', ar: 'انضم إلى فلوزا مجاناً' },
   signIn: { en: 'Sign In', ar: 'تسجيل الدخول' },
   explore: { en: 'Explore', ar: 'استكشف' },
   searchPlaceholder: { en: 'What service are you looking for?', ar: 'ما الخدمة التي تبحث عنها؟' },
@@ -32,7 +33,7 @@ const translations: Record<string, { en: string; ar: string }> = {
     ar: 'ما الخدمة التي تبحث عنها اليوم؟',
   },
 
-  // Trust Badges (honest replacements)
+  // Trust Badges
   verifiedFreelancers: { en: 'Verified Freelancers', ar: 'مستقلون موثوقون' },
   securePayments: { en: 'Secure Payments', ar: 'دفع آمن' },
   support247: { en: '24/7 Support', ar: 'دعم على مدار الساعة' },
@@ -76,7 +77,7 @@ const translations: Record<string, { en: string; ar: string }> = {
   featureCollaboration: { en: 'Team collaboration and multi-user access', ar: 'تعاون الفريق والوصول المتعدد' },
   featureSupport: { en: 'Priority support from success managers', ar: 'دعم ذو أولوية من مديري النجاح' },
 
-  // Stats Section (honest replacements)
+  // Stats Section
   growingCommunity: { en: 'Growing Community', ar: 'مجتمع متنامي' },
   realProjects: { en: 'Real Projects', ar: 'مشاريع حقيقية' },
   verifiedTalent: { en: 'Verified Talent', ar: 'مواهب موثوقة' },
@@ -123,7 +124,6 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
 
-  // Load saved language on mount
   useEffect(() => {
     const saved = localStorage.getItem('flowza-lang') as Language | null;
     if (saved === 'en' || saved === 'ar') {
@@ -131,12 +131,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Apply dir and lang to <html> and font class whenever language changes
   useEffect(() => {
     const html = document.documentElement;
     html.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
     html.setAttribute('lang', language);
-
     if (language === 'ar') {
       html.classList.add('font-cairo');
       html.classList.remove('font-inter');

@@ -1,21 +1,60 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { Search, Menu, X } from 'lucide-react';
-import { SignInButton, SignUpButton, UserButton, useAuth } from '@clerk/nextjs';
+import { Search, Menu, X, MessageSquare } from 'lucide-react';
+import { SignInButton, SignUpButton, UserButton, useAuth, useUser } from '@clerk/nextjs';
 import { useLanguage } from '@/context/LanguageContext';
+import { createClient } from '@/lib/supabase';
+import { getProfileByClerkId } from '@/lib/profile';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [mobileSearchTerm, setMobileSearchTerm] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [messagesHref, setMessagesHref] = useState('/messages');
   const { isSignedIn } = useAuth();
+  const { user, isLoaded } = useUser();
   const { t, language, setLanguage } = useLanguage();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !user) return;
+
+    async function fetchUnread() {
+      const supabase = createClient();
+      const me = await getProfileByClerkId(user!.id);
+      if (!me) return;
+
+      // رابط الرسائل حسب الـ role
+      const roleMap: Record<string, string> = {
+        seller: '/dashboard/seller/messages',
+        buyer_personal: '/dashboard/personal/messages',
+        buyer_company: '/dashboard/company/messages',
+      };
+      if (me.role && roleMap[me.role]) {
+        setMessagesHref(roleMap[me.role]);
+      }
+
+      const { count } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('receiver_id', me.id)
+        .eq('is_read', false);
+
+      setUnreadCount(count || 0);
+    }
+
+    fetchUnread();
+
+    // تحديث كل 30 ثانية
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [isLoaded, isSignedIn, user]);
 
   const handleSearch = (term: string) => {
     if (term.trim()) {
@@ -24,9 +63,7 @@ export default function Navbar() {
   };
 
   const handleDesktopKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch(searchTerm);
-    }
+    if (e.key === 'Enter') handleSearch(searchTerm);
   };
 
   const handleMobileKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -69,23 +106,27 @@ export default function Navbar() {
         <div className="hidden md:flex flex-shrink-0 items-center gap-4">
           {/* Language Toggle */}
           <div className="lang-toggle">
-            <button
-              onClick={() => setLanguage('en')}
-              className={language === 'en' ? 'active' : ''}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLanguage('ar')}
-              className={language === 'ar' ? 'active' : ''}
-            >
-              AR
-            </button>
+            <button onClick={() => setLanguage('en')} className={language === 'en' ? 'active' : ''}>EN</button>
+            <button onClick={() => setLanguage('ar')} className={language === 'ar' ? 'active' : ''}>AR</button>
           </div>
 
           <Link href="/explore" className="text-sm font-medium text-[#C4BFD8] hover:text-white transition-colors">
             {t('explore')}
           </Link>
+
+          {isSignedIn && (
+            <Link href={messagesHref} className="relative">
+              <MessageSquare className="h-6 w-6 text-[#C4BFD8] hover:text-white transition-colors" />
+              {unreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 flex items-center justify-center">
+                  <span className="text-white text-[9px] font-bold">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                </div>
+              )}
+            </Link>
+          )}
+
           {isSignedIn ? (
             <UserButton
               afterSignOutUrl="/"
@@ -109,36 +150,19 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu button */}
-        <button
-          className="md:hidden p-2 text-[#C4BFD8] hover:text-white z-50"
-          onClick={() => setIsOpen(!isOpen)}
-        >
+        <button className="md:hidden p-2 text-[#C4BFD8] hover:text-white z-50" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
-
       </div>
 
       {/* Mobile Slide-down Menu */}
-      <div
-        className={`md:hidden absolute top-16 left-0 w-full bg-background-dark border-b border-border transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[500px] opacity-100 py-4' : 'max-h-0 opacity-0 py-0'
-          }`}
-      >
+      <div className={`md:hidden absolute top-16 left-0 w-full bg-background-dark border-b border-border transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[500px] opacity-100 py-4' : 'max-h-0 opacity-0 py-0'}`}>
         <div className="px-4 flex flex-col space-y-4">
           {/* Mobile Language Toggle */}
           <div className="flex justify-center mb-1">
             <div className="lang-toggle">
-              <button
-                onClick={() => setLanguage('en')}
-                className={language === 'en' ? 'active' : ''}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLanguage('ar')}
-                className={language === 'ar' ? 'active' : ''}
-              >
-                AR
-              </button>
+              <button onClick={() => setLanguage('en')} className={language === 'en' ? 'active' : ''}>EN</button>
+              <button onClick={() => setLanguage('ar')} className={language === 'ar' ? 'active' : ''}>AR</button>
             </div>
           </div>
 
@@ -159,6 +183,26 @@ export default function Navbar() {
           <Link href="/explore" onClick={() => setIsOpen(false)} className="text-[#C4BFD8] hover:text-white font-medium p-2 rounded-lg hover:bg-white/5">
             {t('explore')}
           </Link>
+
+          {isSignedIn && (
+            <Link href={messagesHref} onClick={() => setIsOpen(false)} className="flex items-center gap-2 text-[#C4BFD8] hover:text-white font-medium p-2 rounded-lg hover:bg-white/5">
+              <div className="relative">
+                <MessageSquare className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 flex items-center justify-center">
+                    <span className="text-white text-[9px] font-bold">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  </div>
+                )}
+              </div>
+              Messages
+              {unreadCount > 0 && (
+                <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">{unreadCount}</span>
+              )}
+            </Link>
+          )}
+
           {isSignedIn ? (
             <div className="p-2">
               <UserButton
@@ -172,14 +216,10 @@ export default function Navbar() {
           ) : (
             <>
               <SignInButton mode="modal">
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="w-full text-left rtl:text-right text-[#C4BFD8] hover:text-white font-medium p-2 rounded-lg hover:bg-white/5"
-                >
+                <button onClick={() => setIsOpen(false)} className="w-full text-left rtl:text-right text-[#C4BFD8] hover:text-white font-medium p-2 rounded-lg hover:bg-white/5">
                   {t('signIn')}
                 </button>
               </SignInButton>
-
               <div className="border-t border-border pt-4 mt-2">
                 <SignUpButton mode="modal">
                   <div className="w-full" onClick={() => setIsOpen(false)}>

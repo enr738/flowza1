@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase';
 
 export default function LandingPage() {
@@ -18,17 +18,17 @@ export default function LandingPage() {
   const { user, isLoaded } = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleCtaClick = async () => {
+  const handleCtaClick = useCallback(async () => {
     if (!isLoaded) return;
     if (!user) {
       router.push('/onboarding');
       return;
     }
-    
+
     setIsLoading(true);
     const supabase = createClient();
     const { data } = await supabase.from('profiles').select('role').eq('clerk_id', user.id).single();
-    
+
     if (data?.role) {
       const r = data.role.toLowerCase().trim();
       if (r.includes('seller')) router.push('/dashboard/seller');
@@ -39,7 +39,13 @@ export default function LandingPage() {
       router.push('/onboarding');
     }
     setIsLoading(false);
-  };
+  }, [isLoaded, user, router]);
+
+  // redirect تلقائي للمستخدم المسجل
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    handleCtaClick();
+  }, [isLoaded, user, handleCtaClick]);
 
   const categories = [
     { key: 'design', icon: PenTool },
@@ -70,7 +76,6 @@ export default function LandingPage() {
 
         {/* Hero Section */}
         <section className="relative overflow-hidden pt-24 pb-20 md:pt-32 md:pb-28">
-          {/* Background Glows */}
           <div className="absolute top-10 left-1/4 w-96 h-96 bg-primary-blue/20 rounded-full blur-[120px] -z-10" />
           <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-primary-purple/20 rounded-full blur-[120px] -z-10" />
 
@@ -83,7 +88,6 @@ export default function LandingPage() {
               {t('heroSubtitle')}
             </p>
 
-            {/* Search Bar / Main Action */}
             <div className="max-w-3xl mx-auto relative group">
               <div className="absolute inset-0 bg-gradient-primary rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300" />
               <div className="relative glass rounded-2xl flex flex-col sm:flex-row items-center p-2 gap-2">
@@ -101,7 +105,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Trust Badges — Honest labels */}
             <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mt-8 text-sm md:text-base font-semibold text-white">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-5 w-5 text-[#22C55E]" />
@@ -117,7 +120,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Category Pills */}
             <div className="flex flex-wrap justify-center gap-3 mt-12">
               {categories.map((cat) => (
                 <Link href="/explore" key={cat.key}>
@@ -149,9 +151,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center justify-center py-20 text-center w-full">
               <PackageOpen className="w-16 h-16 text-white/20 mb-4" />
               <h3 className="text-white font-semibold text-lg mb-2">{t('noServicesYet')}</h3>
-              <p className="text-text-secondary text-sm">
-                {t('servicesWillAppear')}
-              </p>
+              <p className="text-text-secondary text-sm">{t('servicesWillAppear')}</p>
             </div>
 
             <div className="mt-10 text-center md:hidden">
@@ -206,7 +206,6 @@ export default function LandingPage() {
                 <p className="text-lg text-[#C4BFD8] mb-8 leading-relaxed max-w-xl text-wrap">
                   {t('companyDescription')}
                 </p>
-
                 <ul className="space-y-4 mb-10 text-wrap">
                   {companyFeatures.map((featureKey, i) => (
                     <li key={i} className="flex items-start gap-3">
@@ -215,7 +214,6 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-
                 <Link href="/onboarding/company-setup">
                   <Button size="lg" className="w-full sm:w-auto h-14">{t('setupCompanyAccount')}</Button>
                 </Link>
@@ -226,7 +224,7 @@ export default function LandingPage() {
 
         <div className="border-t border-white/5 my-16 max-w-7xl mx-auto" />
 
-        {/* Stats Section — Honest values */}
+        {/* Stats Section */}
         <section className="py-20 md:py-28 bg-surface/20">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
@@ -250,13 +248,13 @@ export default function LandingPage() {
             <p className="text-lg md:text-xl text-[#C4BFD8] mb-10 max-w-2xl mx-auto">
               {t('ctaSubtitle')}
             </p>
-            <button 
+            <button
               onClick={handleCtaClick}
               disabled={isLoading}
               className="h-14 w-full sm:w-auto px-10 bg-white text-black font-semibold rounded-xl hover:bg-white/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mx-auto"
             >
               {isLoading && <span className="animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full" />}
-              {t('joinFlowzaFree') || 'Join Flowza Free'}
+              {t('joinFlowzaFree')}
             </button>
           </div>
         </section>
