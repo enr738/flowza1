@@ -3,9 +3,8 @@ import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { createAdminClient } from '@/lib/supabase-admin';
 
-const supabase = createAdminClient();
-
 export async function POST(req: Request) {
+  const supabase = createAdminClient();
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
   
   if (!WEBHOOK_SECRET) {
