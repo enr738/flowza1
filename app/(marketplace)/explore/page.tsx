@@ -32,7 +32,7 @@ interface GigData {
 
 export default function ExplorePage() {
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
+  const searchQuery = searchParams.get('q') || '';
 
   const [gigs, setGigs] = useState<GigData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +41,6 @@ export default function ExplorePage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [minRating, setMinRating] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
-  const [searchQuery] = useState(initialQuery);
   const { user: currentUser } = useUser();
 
   useEffect(() => {
@@ -68,7 +67,7 @@ export default function ExplorePage() {
       setIsLoading(false);
     }
     fetchGigs();
-  }, [currentUser]);
+  }, [currentUser, searchParams]);
 
   const filtered = gigs
     .filter(g => {
@@ -93,7 +92,6 @@ export default function ExplorePage() {
       <Navbar />
       <main className="flex-1 py-8 px-4">
         <div className="container mx-auto max-w-7xl">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">
               {searchQuery ? `Results for "${searchQuery}"` : 'Explore Services'}
@@ -103,7 +101,6 @@ export default function ExplorePage() {
             </p>
           </div>
 
-          {/* Sort + Filter Toggle */}
           <div className="flex flex-wrap gap-3 items-center mb-6">
             <div className="flex gap-2 flex-wrap">
               {CATEGORIES.map(cat => (
@@ -137,7 +134,6 @@ export default function ExplorePage() {
           </div>
 
           <div className="flex gap-6">
-            {/* Filter Sidebar */}
             {showFilters && (
               <aside className="w-64 flex-shrink-0 space-y-6">
                 <div className="glass rounded-2xl p-5">
@@ -173,7 +169,6 @@ export default function ExplorePage() {
               </aside>
             )}
 
-            {/* Gig Grid */}
             <div className="flex-1">
               {isLoading ? (
                 <div className={`grid gap-5 grid-cols-1 sm:grid-cols-2 ${showFilters ? 'lg:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
