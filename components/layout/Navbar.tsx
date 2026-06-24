@@ -16,7 +16,6 @@ export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState('');
   const [mobileSearchTerm, setMobileSearchTerm] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
-  const [messagesHref, setMessagesHref] = useState('/messages');
   const { isSignedIn } = useAuth();
   const { user, isLoaded } = useUser();
   const { t, language, setLanguage } = useLanguage();
@@ -30,16 +29,6 @@ export default function Navbar() {
       const me = await getProfileByClerkId(user!.id);
       if (!me) return;
 
-      // رابط الرسائل حسب الـ role
-      const roleMap: Record<string, string> = {
-        seller: '/dashboard/seller/messages',
-        buyer_personal: '/dashboard/personal/messages',
-        buyer_company: '/dashboard/company/messages',
-      };
-      if (me.role && roleMap[me.role]) {
-        setMessagesHref(roleMap[me.role]);
-      }
-
       const { count } = await supabase
         .from('messages')
         .select('id', { count: 'exact', head: true })
@@ -50,8 +39,6 @@ export default function Navbar() {
     }
 
     fetchUnread();
-
-    // تحديث كل 30 ثانية
     const interval = setInterval(fetchUnread, 30000);
     return () => clearInterval(interval);
   }, [isLoaded, isSignedIn, user]);
@@ -104,7 +91,6 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="hidden md:flex flex-shrink-0 items-center gap-4">
-          {/* Language Toggle */}
           <div className="lang-toggle">
             <button onClick={() => setLanguage('en')} className={language === 'en' ? 'active' : ''}>EN</button>
             <button onClick={() => setLanguage('ar')} className={language === 'ar' ? 'active' : ''}>AR</button>
@@ -115,7 +101,7 @@ export default function Navbar() {
           </Link>
 
           {isSignedIn && (
-            <Link href={messagesHref} className="relative">
+            <Link href="/messages" className="relative">
               <MessageSquare className="h-6 w-6 text-[#C4BFD8] hover:text-white transition-colors" />
               {unreadCount > 0 && (
                 <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 flex items-center justify-center">
@@ -158,7 +144,6 @@ export default function Navbar() {
       {/* Mobile Slide-down Menu */}
       <div className={`md:hidden absolute top-16 left-0 w-full bg-background-dark border-b border-border transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[500px] opacity-100 py-4' : 'max-h-0 opacity-0 py-0'}`}>
         <div className="px-4 flex flex-col space-y-4">
-          {/* Mobile Language Toggle */}
           <div className="flex justify-center mb-1">
             <div className="lang-toggle">
               <button onClick={() => setLanguage('en')} className={language === 'en' ? 'active' : ''}>EN</button>
@@ -185,7 +170,7 @@ export default function Navbar() {
           </Link>
 
           {isSignedIn && (
-            <Link href={messagesHref} onClick={() => setIsOpen(false)} className="flex items-center gap-2 text-[#C4BFD8] hover:text-white font-medium p-2 rounded-lg hover:bg-white/5">
+            <Link href="/messages" onClick={() => setIsOpen(false)} className="flex items-center gap-2 text-[#C4BFD8] hover:text-white font-medium p-2 rounded-lg hover:bg-white/5">
               <div className="relative">
                 <MessageSquare className="h-5 w-5" />
                 {unreadCount > 0 && (
